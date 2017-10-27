@@ -9,8 +9,9 @@ Class that represents a mathematical vector
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <cmath>
 
-using std::cerr;
+using namespace std;
 
 class MVector {
 public:
@@ -53,7 +54,7 @@ private:
 
 };
 
-double dot(const MVector& lhs, const MVector& rhs) {
+inline double dot(const MVector& lhs, const MVector& rhs) {
 	// Ensure operation is valid 
 	if (lhs.size() != rhs.size()) {
 		cerr << "Error in function: dot();\nVectors incompatible length.\n";
