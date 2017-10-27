@@ -5,6 +5,8 @@
 
 # Visual Studio Code
 .vscode/
+*.o
+*.out
 
 # User-specific files
 *.suo
