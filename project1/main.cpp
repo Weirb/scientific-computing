@@ -7,9 +7,10 @@
 
 using namespace std;
 
-typedef pair < MVector, int > vectorpair;
-
-
+struct VectorSolution {
+	MVector solution;
+	int iteration_count;
+};
 
 MMatrix kronecker(MMatrix A, MMatrix B) {
 
@@ -29,8 +30,8 @@ MMatrix kronecker(MMatrix A, MMatrix B) {
 
 
 
-
-vectorpair cg(MMatrix A, MVector b, MVector x0, int itercount, double tol){
+template<class Matrix>
+VectorSolution cg(Matrix A, MVector b, MVector x0, int itercount, double tol){
 
 	int n = A.Rows();
 
@@ -62,42 +63,7 @@ vectorpair cg(MMatrix A, MVector b, MVector x0, int itercount, double tol){
 		r = rk;
 	}
 
-	return vectorpair(x, k);
-}
-
-vectorpair cg(MBandedMatrix A, MVector b, MVector x0, int itercount, double tol) {
-
-	int n = A.Rows();
-
-	// Initial guess of the zero vector
-	MVector x = x0;
-
-	MVector s = b - A*x;
-	MVector r = s;
-
-	int k;
-	for (k = 0; k < itercount; ++k) {
-
-		MVector w = A*s;
-
-		double a = dot(r, s) / dot(w, s);
-
-		x = x + a*s;
-
-		MVector rk = r - a*w;
-
-		if (r.L2Norm() < tol) {
-			break;
-		}
-
-		double p = pow(rk.L2Norm() / r.L2Norm(), 2);
-
-		s = rk + p*s;
-
-		r = rk;
-	}
-
-	return vectorpair(x, k);
+	return VectorSolution{x, k};
 }
 
 //void cg_test() {
@@ -130,12 +96,17 @@ int main(int argc, char** argv){
 	//B(1, 0) = 6; B(1, 1) = 7;
 	//cout << kronecker(A, B);
 
-	int n = 100;
+	int n = 5;
 	MBandedMatrix A = laplacian_2d_banded(n);
 	MVector b = create_vector1(n*n);
-	vectorpair x = cg(A, b, MVector(n*n, 0), 1000, 1e-6);
-	cout << x.first << endl;
-	cout << x.second;
+	VectorSolution sol = cg(A, b, MVector(n*n, 0), 1000, 1e-6);
+	cout << sol.iteration_count << endl;
+	cout << sol.solution << endl;
+
+	MMatrix B = laplacian_2d(n);
+	sol = cg(B, b, MVector(n*n, 0), 1000, 1e-6);
+	cout << sol.iteration_count << endl;
+	cout << sol.solution;
 
 	cin.get();
 
