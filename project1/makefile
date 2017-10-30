@@ -1,14 +1,19 @@
-all: makeme
+CC=g++
+CFLAGS_DEBUG=-c -Wall
+CFLAGS_RELEASE=-c -O2 -ffast-math -march=native
+CFLAGS=$(CFLAGS_DEBUG)
+OBJ_PATH=obj
+SRC_PATH=src
+EXECUTABLE=cg.exe
+FILES=functions.cpp main.cpp
+OBJECTS = $(addprefix $(OBJ_PATH)/, $(FILES:.cpp=.o))
 
-makeme: functions.o main.o
-	g++ -o out functions.o main.o
+all: $(OBJECTS)
+	$(CC) -o $(EXECUTABLE) $(OBJECTS)
 
-functions.o: functions.cpp
-	g++ -c functions.cpp
-
-main.o: main.cpp
-	g++ -c main.cpp
+$(OBJ_PATH)/%.o: $(SRC_PATH)/%.cpp
+	$(CC) $(CFLAGS) -o $@ $<
 
 .PHONY: clean
 clean:
-	rm *.o out
+	rm $(OBJECTS) $(EXECUTABLE)
