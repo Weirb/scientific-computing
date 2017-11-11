@@ -1,5 +1,6 @@
 /*
-
+File: mbandedmatrix.h
+MBandedMatrix class for a sparse, banded matrix.
 */
 
 #ifndef MBANDEDMATRIX_H
@@ -7,9 +8,10 @@
 
 #include <iostream>
 #include <vector>
-#include <algorithm>
 
-using namespace std;
+using std::ostream;
+using std::min;
+using std::max;
 
 class MBandedMatrix {
 public:
@@ -20,9 +22,6 @@ public:
 
 	// access element [rvalue]
 	double operator()(int i, int j) const {
-		//cout << "Accessing: " << j + l - i + i * nCols << endl;
-		//cout << "Size: " << A.size() << endl << endl;
-
 		return A(i, j + l - i);
 	}
 
@@ -31,26 +30,39 @@ public:
 		return A(i, j + l - i);
 	}
 
-	// size of matrix
+	// size of matrix: rows and columns
 	int Rows() const { return nRows; }
 	int Cols() const { return nCols; }
 
+	// size of matrix: number of bands
 	int Bands() const { return r + l + 1; } // total number of bands
 	int LBands() const { return l; } // number of left bands
 	int RBands() const { return r; } // number of right bands
 
 private:
-	MMatrix A;
+	MMatrix A; // Sparse MMatrix contains the nonzero elements
 	unsigned int nRows, nCols;
 	int l, r; // number of left/right diagonals
 };
 
-inline MVector operator*(const MBandedMatrix A, const MVector& x) {
+// Overload operator for MBandedMatrix * MVector
+inline MVector operator*(const MBandedMatrix& A, const MVector& x) {
+	// Ensure operation is valid 
+	if (A.Cols() != x.size()){
+		cerr << "Error in function: MVector operator+(MBandedMatrix&, MVector&);\n"
+			 << "Operands incompatible size.\n";
+		exit(-1);
+	}
 
 	int n = A.Rows();
 	MVector y(n, 0.);
 
+	// Standard matrix-vector multiply.
+	// Outer loop over the rows
 	for (int i = 0; i < n; ++i) {
+		// Inner loop over the columns, but with modification.
+		// Only work within the bands, no need to use matrix 
+		// values outside the bands since they will be 0.
 		int jmin = max(min(i - A.LBands(), A.Cols()), 0);
 		int jmax = min(i + A.RBands() + 1, A.Cols());
 
@@ -61,8 +73,11 @@ inline MVector operator*(const MBandedMatrix A, const MVector& x) {
 	return y;
 }
 
+// Overload operator for MBandedMatrix to an output stream.
 inline ostream& operator<<(ostream& output, const MBandedMatrix& banded) {
+	
 	int r = banded.Rows(), c = banded.Cols();
+	
 	for (int i = 0; i < banded.Rows(); i++) {
 		// calculate position of lower and upper band
 		int jmin = max(min(i - banded.LBands(), banded.Cols()), 0);
