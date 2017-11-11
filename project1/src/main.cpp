@@ -8,44 +8,60 @@
 using namespace std;
 
 struct VectorSolution {
+/*
+VectorSolution struct explicitly defines the solution parameters.
+These are the number of iterations taken to converge and the solution vector.
+*/
 	MVector solution;
 	int iteration_count;
 };
 
 template<class Matrix>
 VectorSolution cg(Matrix A, MVector b, MVector x0, int itercount, double tol){
-
+/*
+Conjugate Gradient
+Compute the solution to A*x=b with initial guess x0.
+Runs for no more than itercount iterations and finds solution to within tol.
+*/
 	int n = A.Rows();
 
-	// Initial guess of the zero vector
+	// Initial guess of the zero vector.
 	MVector x = x0;
 
-	MVector s = b - A*x;
-	MVector r = s;
+	MVector r = b - A*x;
+	MVector p = r;
+	MVector w, rk;
+	double alpha = 0, beta = 0, rdotr = 0;
 
-	int k;
-	for (k = 0; k < itercount; ++k){
+	int k = 0;
+	for (; k < itercount; ++k){
 
-		MVector w = A*s;
+		w = A * p;
+		rdotr = dot(r, r);
+		alpha =  rdotr / dot(p, w);
 
-		double a = dot(r, s) / dot(w, s);
+		// Update the current solution
+		x = x + alpha*p;
 
-		x = x + a*s;
-
-		MVector rk = r - a*w;
-
-		if (r.L2Norm() < tol){
+		// Update the residual and check if norm is less than tolerance.
+		// Exit loop if we have convergence.
+		rk = r - alpha*w;
+		if (rk.L2Norm() < tol){
 			break;
 		}
 
-		double p = pow(rk.L2Norm() / r.L2Norm(), 2);
-
-		s = rk + p*s;
-
+		// Compute the variable updates for p and r
+		beta = dot(rk, rk) / rdotr;
+		p = rk + beta * p;
 		r = rk;
 	}
 
-	return VectorSolution{x, k};
+	// Create the solution struct with variables to return.
+	VectorSolution sol;
+	sol.iteration_count = k;
+	sol.solution = x;
+
+	return sol;
 }
 
 int main(int argc, char** argv){
