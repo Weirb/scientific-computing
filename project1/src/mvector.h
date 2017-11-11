@@ -1,7 +1,7 @@
 /*
-Class that represents a mathematical vector
+File: mvector.h
+MVector class represents a mathematical vector.
 */
-
 
 #ifndef MVECTOR_H
 #define MVECTOR_H
@@ -11,15 +11,15 @@ Class that represents a mathematical vector
 #include <algorithm>
 #include <cmath>
 
-using namespace std;
+using std::max;
+using std::abs;
+using std::vector;
 
 class MVector {
 public:
 	// constructors
 	MVector() {}
-
 	MVector(int n) : v(n) {}
-
 	MVector(int n, double x) : v(n, x) {}
 
 	// access element (lvalue)
@@ -33,6 +33,7 @@ public:
 	// number of elements
 	int size() const { return v.size(); }
 
+	// L2 norm, square root of the sum of squares of elements.
 	double L2Norm() const {
 		double norm = 0;
 		for (int i = 0; i < size(); ++i)
@@ -41,23 +42,25 @@ public:
 		return sqrt(norm);
 	}
 
+	// Linfinity norm, maximum absolute value of elements.
 	double LInfNorm() const {
 		double maxAbs = 0;
 		for (int i = 0; i < size(); i++)
-			maxAbs = std::max(std::abs(v[i]), maxAbs);
+			maxAbs = max(abs(v[i]), maxAbs);
 
 		return maxAbs;
 	}
 
 private:
-	std::vector<double> v;
-
+	vector<double> v;
 };
 
+// Compute the dot product of two MVectors
 inline double dot(const MVector& lhs, const MVector& rhs) {
 	// Ensure operation is valid 
 	if (lhs.size() != rhs.size()) {
-		cerr << "Error in function: dot();\nVectors incompatible length.\n";
+		cerr << "Error in function: double dot(const MVector&, const MVector&);\n"
+			 << "MVectors incompatible length.\n";
 		exit(-1);
 	}
 
@@ -68,7 +71,7 @@ inline double dot(const MVector& lhs, const MVector& rhs) {
 	return t;
 }
 
-// Operator overload for "scalar * vector"
+// Operator overload for "scalar * MVector"
 inline MVector operator*(const double& lhs, const MVector& rhs) {
 	MVector temp(rhs);
 	for (int i = 0; i < temp.size(); i++)
@@ -77,25 +80,23 @@ inline MVector operator*(const double& lhs, const MVector& rhs) {
 	return temp;
 }
 
-// Operator overload for "vector * scalar"
+// Operator overload for "MVector * scalar"
 inline MVector operator*(const MVector& lhs, const double& rhs) {
-	MVector temp(lhs);
-	for (int i = 0; i < temp.size(); i++)
-		temp[i] *= rhs;
-
-	return temp;
+	// Switch order of operands to invoke operator*().
+	return operator*(rhs, lhs);
 }
 
-// Operator overload for "vector / scalar"
+// Operator overload for "MVector / scalar"
 inline MVector operator/(const MVector& lhs, const double& rhs) {
 	return operator*(lhs, 1 / rhs);
 }
 
-// Operator overload for "vector + vector"
+// Operator overload for "MVector + MVector"
 inline MVector operator+(const MVector& lhs, const MVector& rhs) {
 	// Ensure operation is valid 
 	if (lhs.size() != rhs.size()) {
-		cerr << "Error in function: MVector operator+();\nVectors incompatible length.\n";
+		cerr << "Error in function: MVector operator+(const MVector&, const MVector&);\n"
+			 << "MVectors incompatible length.\n";
 		exit(-1);
 	}
 
@@ -106,11 +107,12 @@ inline MVector operator+(const MVector& lhs, const MVector& rhs) {
 	return temp;
 }
 
-// Operator overload for "vector - vector"
+// Operator overload for "MVector - MVector"
 inline MVector operator-(const MVector& lhs, const MVector& rhs) {
 	// Ensure operation is valid 
 	if (lhs.size() != rhs.size()) {
-		cerr << "Error in function: MVector operator-();\nVectors incompatible length.\n";
+		cerr << "Error in function: MVector operator-(const MVector&, const MVector&);\n"
+			 << "MVectors incompatible length.\n";
 		exit(-1);
 	}
 
@@ -121,10 +123,14 @@ inline MVector operator-(const MVector& lhs, const MVector& rhs) {
 	return temp;
 }
 
+// Overload operator for MVector to an output stream.
 inline ostream& operator<<(ostream& stream, const MVector& v) {
-	for (int i = 0; i < v.size() - 1; ++i) {
+	// Output each element on a new line.
+	// No new line after the final element.
+	int n = v.size();
+	for (int i = 0; i < n - 1; ++i) {
 		stream << v[i] << endl;
-	} stream << v[v.size() - 1];
+	} stream << v[n - 1];
 	return stream;
 }
 
