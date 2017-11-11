@@ -10,9 +10,7 @@ MBandedMatrix class for a sparse, banded matrix.
 #include <vector>
 #include <algorithm>
 
-using std::ostream;
-using std::min;
-using std::max;
+using namespace std;
 
 class MBandedMatrix {
 public:

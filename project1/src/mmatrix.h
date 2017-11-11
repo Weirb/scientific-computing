@@ -1,5 +1,6 @@
 /*
-Class that represents a mathematical matrix
+File: mmatrix.h
+MMatrix class represents a mathematical matrix.
 */
 
 #ifndef MMATRIX_H
@@ -7,6 +8,8 @@ Class that represents a mathematical matrix
 
 #include <vector>
 #include <iostream>
+
+using namespace std;
 
 class MMatrix {
 public:
@@ -32,20 +35,23 @@ public:
 		return A[j + i * nCols];
 	}
 
-	// size of matrix
+	// size of matrix: rows and columns
 	int Rows() const { return nRows; }
 	int Cols() const { return nCols; }
 
 private:
 	unsigned int nRows, nCols;
-	std::vector<double> A;
+	vector<double> A;
 };
 
-
-
+// Overload operator for MMatrix * MVector
 inline MVector operator*(const MMatrix& A, const MVector& x){
-	if (A.Cols() != x.size())
+	// Ensure operation is valid 
+	if (A.Cols() != x.size()){
+		cerr << "Error in function: MVector operator+(const MMatrix&, const MVector&);\n"
+			 << "Operands incompatible size.\n";
 		exit(-1);
+	}
 
 	int n = A.Rows();
 	MVector v(n, 0.);
@@ -58,12 +64,18 @@ inline MVector operator*(const MMatrix& A, const MVector& x){
 	return v;
 }
 
+// Overload operator for MMatrix + MMatrix
 inline MMatrix operator+(const MMatrix& A, const MMatrix& B) {
-	if (!(A.Cols() == B.Cols() && A.Rows() == B.Rows()))
+	// Ensure operation is valid 
+	if (!(A.Cols() == B.Cols() && A.Rows() == B.Rows())){
+		cerr << "Error in function: MVector operator+(const MMatrix&, const MMatrix&);\n"
+			 << "Operands incompatible size.\n";
 		exit(-1);
+	}
 
+	// Loop over all rows, columns of the matrix.
+	// Element wise add the matrices together.
 	MMatrix C = A;
-
 	for (int i = 0; i < C.Rows(); ++i) {
 		for (int j = 0; j < C.Cols(); ++j) {
 			C(i, j) += B(i, j);
@@ -72,6 +84,7 @@ inline MMatrix operator+(const MMatrix& A, const MMatrix& B) {
 	return C;
 }
 
+// Overload operator for MMatrix to an output stream.
 inline ostream& operator<<(ostream& stream, const MMatrix& A) {
 	for (int i = 0; i < A.Rows(); ++i) {
 		for (int j = 0; j < A.Cols(); j++) {

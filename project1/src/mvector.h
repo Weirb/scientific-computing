@@ -11,9 +11,7 @@ MVector class represents a mathematical vector.
 #include <algorithm>
 #include <cmath>
 
-using std::max;
-using std::abs;
-using std::vector;
+using namespace std;
 
 class MVector {
 public:
@@ -60,7 +58,7 @@ inline double dot(const MVector& lhs, const MVector& rhs) {
 	// Ensure operation is valid 
 	if (lhs.size() != rhs.size()) {
 		cerr << "Error in function: double dot(const MVector&, const MVector&);\n"
-			 << "MVectors incompatible length.\n";
+			 << "Operands incompatible size.\n";
 		exit(-1);
 	}
 
@@ -96,7 +94,7 @@ inline MVector operator+(const MVector& lhs, const MVector& rhs) {
 	// Ensure operation is valid 
 	if (lhs.size() != rhs.size()) {
 		cerr << "Error in function: MVector operator+(const MVector&, const MVector&);\n"
-			 << "MVectors incompatible length.\n";
+			 << "Operands incompatible size.\n";
 		exit(-1);
 	}
 
@@ -112,7 +110,7 @@ inline MVector operator-(const MVector& lhs, const MVector& rhs) {
 	// Ensure operation is valid 
 	if (lhs.size() != rhs.size()) {
 		cerr << "Error in function: MVector operator-(const MVector&, const MVector&);\n"
-			 << "MVectors incompatible length.\n";
+			 << "Operands incompatible size.\n";
 		exit(-1);
 	}
 
