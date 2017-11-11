@@ -8,6 +8,7 @@ MBandedMatrix class for a sparse, banded matrix.
 
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 using std::ostream;
 using std::min;
@@ -95,7 +96,7 @@ inline ostream& operator<<(ostream& output, const MBandedMatrix& banded) {
 			output.width(8);
 			output << 0;
 		}
-		std::cout << endl;
+		output << endl;
 	}
 	return output;
 }
