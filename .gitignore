@@ -3,6 +3,11 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# LaTeX output
+*.aux
+*.fls
+*.fdb_latexmk
+
 # Visual Studio Code
 .vscode/
 *.o
