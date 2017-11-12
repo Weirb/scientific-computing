@@ -1,0 +1,55 @@
+\documentclass[a4paper]{article}
+\usepackage[title]{appendix}
+\usepackage{listings,amsmath,amssymb,xcolor,graphicx,url,natbib}
+\usepackage[inner=3cm,outer=3cm,top=3cm,bottom=3cm]{geometry}
+\usepackage{csvsimple}
+\usepackage{filecontents}
+\usepackage{longtable}
+\usepackage{caption}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\lstset{language=C++}
+\lstset{frame=bt,
+  language=C++,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=false,
+  tabsize=4,
+  captionpos=b,
+  keepspaces=true,
+  showspaces=false,
+  showtabs=false
+}
+
+\def\inline{\lstinline[basicstyle=\ttfamily]}
+
+% \includecode is a custom macro
+% usage is:
+% \includecode{title}{filename}
+% where 'title' is the displayed title of the file (usually its name)
+%   and 'filename' is the full filename, including the path relative to the LaTeX document
+% See example below in the appendix
+\newcommand{\includecode}[2]{\subsection{\lstinline[basicstyle=\ttfamily\large]{#1}}\lstinputlisting{#2}}
+
+\setlength\parindent{0pt}
+
+\title{Project 1: Conjugate Gradient}
+
+\author{Student No: 10217636}
+\date{2017-10-19}
+
+\begin{document}
+\maketitle
+
+\input{project1.tex}
+
+\end{document}
