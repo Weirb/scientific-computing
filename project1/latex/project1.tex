@@ -1,3 +1,7 @@
+\begin{abstract}
+    Conjugate gradient algorithm... Laplacian operator...
+\end{abstract}
+
 \section{Introduction}
 
 \iffalse
@@ -30,20 +34,94 @@ Proof of convergence
 Proof of complexity
 \fi
 
+\subsection{Conjugate Gradient}
+\label{sec:cg}
+
+% Steepest descent vs conjugate gradient
+% Definition of A-conjugate vectors
+% Minimisation of function <=> Solution to Ax=b
+
+
+\subsection{Rate of convergence}
+
+For certain matrices, $A$, we can expect immediate convergence. single eigenvalue
+In the case that 
+
 
 \section{Implementation}
 
 \iffalse
 Implementation discussion:
 
-Better band storage for wide bands with lots of zeros. Store the nonzeros with their locations.
-Better interaction with the program for inputting data or getting results. Use of a scripting language and parser. 
-Should treat vectors as matrices, reduces number of classes, fewer bugs and easier implementation.
++Better band storage for wide bands with lots of zeros. Store the nonzeros with their locations.
+-Better interaction with the program for inputting data or getting results. Use of a scripting language and parser. 
++Should treat vectors as matrices, reduces number of classes, fewer bugs and easier implementation.
 Sparse matrices
 Parallelisation and optimisation.
 Unit tests
 Error handling
 \fi
+
+\subsection{Matrix Classes}
+
+The implementation of the \inline{MVector}, \inline{MMatrix}, and \inline{MBandedMatrix} classes can be found in the code listings in the appendix.
+
+% VECTORS AND MATRICES
+The \inline{MMatrix} and \inline{MVector} classes behave intuitively as mathematical matrices and vectors. 
+The underlying data structure for these classes is a \inline{vector<double>} object.
+Accessing elements of a \inline{MVector} is identical to accessing elements of the underlying \inline{vector<double>}.
+Accessing elements of a \inline{MMatrix} requires converting between matrix coordinates and the list coordinates of the \inline{vector}.
+In matrix coordinates, $(i,j)$ specifies the element at the $i^\mathrm{th}$ row and $j^\mathrm{th}$ column.
+To convert to list coordinates, observe that $j$ is the offset from the start of the row and $i$ specifies the number of rows down.
+If each row consists of $n$ elements, i.e. the number of columns, then we have in list coordinates, $(i,j) \mapsto i*n + j$.
+
+
+% VECTOR IS DISTINCT FROM THE MATRIX
+The vector class is created distinct from the matrix class.
+Although vector and matrix objects interact with each other in the expected way, a representation of a vector $x$ as a matrix in $x\in\R^{n\times 1}$ is also possible.
+In this case, a vector $x$ could be instantiated as \inline{MMatrix x(n,1);}.
+Then the product of a vector and matrix is defined as long as the corresponding dimensions match, so it would be necessary to consider the dimensions of matrices in the necessary operations.
+By making this change, we reduce duplicate code as we can reuse the code for stream outputs, matrix-matrix multiplication, and scalar-matrix multiplication.
+Ideally, code reuse leads to fewer bugs as fewer classes and lines of code are involved in the project.
+
+
+% SPARSITY, BANDED MATRIX
+The \inline{MBandedMatrix} implementation for a banded matrix behaves identically to an \inline{MMatrix} in the case that both are banded matrices.
+The difference lies in the underlying data structure of the class.
+For a matrix $B\in\R^{n\times n}$ with $l$ lower bands and $r$ upper bands, we define a new matrix $B^*\in\R^{n \times (l+r+1)}$ whose elements are
+\[
+    b^*_{i,j+l-i} = b_{i,j}.
+\]
+The \inline{MBandedMatrix} allows us to exploit the sparse structure of certain types of matrices.
+In particular, a matrix whose entries are close to the diagonal are most well represented by this class. 
+If $l+r+1 << n$, then we benefit from greatly reduced storage costs.
+Matrices whose bandwidths are large and contain many zero elements between nonzeros on the same row suffer from the storage of several zeros in the underlying data structure.
+In this case, the cost savings from using an \inline{MBandedMatrix} may not be sufficient to justify its use.
+
+Alternative sparse storage methods may acheive improved storage savings in cases where bandwidth is large and consists of many zero entries.
+For example, the \textit{compressed sparse row} format involves storage of three arrays consisting of the nonzero elements of a matrix as well as index information.
+The first array contains the nonzero elements of the matrix, while the second two arrays contain row and column index information for the entries in the first array.
+The format is compressed row, because redundant row indices are ommitted in favour of a method describing the number of elements on each row.
+This approach to storing sparse matrices is similar to that which is used by MATLAB and other linear algebra packages handling sparse matrices.
+% REFERENCE
+
+Another approach to reduce storage would be to use the properties of matrix symmetry. 
+For a symmetric matrix, the elements above and below the diagonal are identical, and so there is no need to store these elements.
+For a banded matrix, this translates to storing only one of the upper or lower bands.
+An $n\times n$ \inline{MBandedMatrix} can be compressed to an $n \times (l+r+1)$ matrix.
+Exploiting symmetry, we can reduce this to storing $n \times (r+1)$ elements.
+
+
+\subsection{Conjugate Gradient}
+
+The main algorithm of study in this project is the conjguate gradient method for solving symmetric, positive definite linear systems iteratively.
+Following algorithm \ref{alg:cg}, as explained in section \ref{sec:cg}, the implementation is straightforward.
+After initialisation of the variables, we begin our iteration stage. 
+Given a maximum number of iterations and a tolerance, we guarantee that iteration has a fixed endpoint.
+This will be the first of either the $L^{2}$ norm of the residual is below the tolerance of the maximum iteration count is reached.
+
+In order to avoid recomputing dot products and matix-vector products, certain variables are used for storage and reuse.
+For example, we use $r_k \cdot r_k$ twice and $A p_k$ twice. By storing these results we avoid multiple computations.
 
 
 \section{Results}
@@ -60,4 +138,23 @@ Graphs, errors, convergence rates,
 
 \clearpage
 \appendix
+\section{Tables}
+
+
+\section{Algorithms}
+
+% Conjugate gradient algorithm
+
+\begin{algorithm}[H]
+\KwData{Symmetric, positive definite matrix $A\in\R^{n\times n}$}
+\KwData{Data vector $b\in\R^n$}
+\KwResult{Vector $x$, solving $Ax=b$}
+
+
+
+\caption{Conjugate Gradient}
+\label{alg:cg}
+\end{algorithm}
+
+
 \section{Code Listings}
