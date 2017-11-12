@@ -1,5 +1,5 @@
 \begin{abstract}
-    Conjugate gradient algorithm... Laplacian operator...
+    Conjugate gradient algorithm... Laplacian operator... 
 \end{abstract}
 
 \section{Introduction}
@@ -18,6 +18,27 @@ Talk about the problems we are going to discuss
 Top 10 algorithms 20th century. How does it relate to wider mathematical community?
 
 \fi
+
+Conjugate gradient is known as a Krylov subspace method. 
+In 2000, this class of methods was voted third in the top 10 algorithms of the 20th century.
+
+It was developed by Hestenes and Steifel.
+Can be thought of as a direct method or an iterative method.
+Was not adopted initially as a direct method.
+Much more powerful when performed iteratively.
+Only works for symmetric and positive definite matrices.
+
+Problem we are looking at is Poisson problem in 1 and 2 dimensions.
+This is the Laplace equation with nonzero right hand side, which consists of second order derivatives with respect to indepdendent variables.
+Elliptic PDE whose solutions are harmonic functions
+
+In the discretisation of the Poisson problem, we obtain a linear system of equations.
+This system is symmetric and so can be solved using cg.
+
+Laplace's equation features in electrostatics, fluid dynamics, and several other areas of physics.
+Thus efficient methods for solving linear systems involving this problem are desired.
+
+
 
 
 \section{Mathematics}
@@ -39,7 +60,39 @@ Proof of complexity
 
 % Steepest descent vs conjugate gradient
 % Definition of A-conjugate vectors
+
+
 % Minimisation of function <=> Solution to Ax=b
+% Pos-def => convex => local min is global min
+% Begin with initial guess, find min of f -> get sol to Ax=b
+
+% Motivation of algorithm
+Consider the problem of minimising the function
+\[
+    f(x) = \frac{1}{2} x^T A x - b^T x,
+\]
+with $A$ symmetric and positive definite. This is minimised exactly when 
+\[
+    \nabla f(x) = A x - b = 0.
+\]
+Hence, the solution to $Ax=b$ is the minimiser of $f(x)$.
+Consider the Hessian of $f(x)$,
+\[
+    \nabla^2 f(x) = A.
+\]
+Since $A$ is positive definite, this means that $f(x)$ is a convex function.
+Convexivity gives us that any local minima is in fact a global minimum.
+Hence, by minimising $f(x)$, we find the solution to the linear system.
+
+% Discussion of algorithm
+Two vectors $u, v$ are conjugate if $u^T v = 0$. 
+Two vectors are said to be $A$-conjugate or conjugate with respect to $A$ if $u^T A v = 0$.
+Conjugate vectors then form a linearly independent set.
+The CG algorithm selects $A$-conjugate search directions and finds the optimal step size in that direction.
+
+This has the benefit of exclusively searching along previously unsearched directions and for the optimal search step for the solution.
+Contrast this with steepest descent, which has the possibility of overshooting the solution.
+Thus we can expect convergence to be much more rapid when these two methods are compared.
 
 
 \subsection{Rate of convergence}
@@ -56,8 +109,7 @@ Implementation discussion:
 +Better band storage for wide bands with lots of zeros. Store the nonzeros with their locations.
 -Better interaction with the program for inputting data or getting results. Use of a scripting language and parser. 
 +Should treat vectors as matrices, reduces number of classes, fewer bugs and easier implementation.
-Sparse matrices
-Parallelisation and optimisation.
++Sparse matrices
 Unit tests
 Error handling
 \fi
@@ -134,7 +186,19 @@ Graphs, errors, convergence rates,
 
 \section{Conclusion}
 
+\iffalse
+    Conclusion draws together strands of work throughout the report, 
+    demonstrating how the results obtained relate to each other and 
+    the broader context of the mathematical problem.
 
+Discussion of results in context of problem
+Talk about related algorithms
+> BiCG
+> CG squared
+Preconditioning
+Parallelisation, optimisations
+Results
+\fi
 
 \clearpage
 \appendix
