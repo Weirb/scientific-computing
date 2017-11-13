@@ -17,27 +17,45 @@ These are the number of iterations taken to converge and the solution vector.
 };
 
 template<class Matrix>
-VectorSolution cg(Matrix A, MVector b, MVector x0, int itercount, double tol){
+VectorSolution cg(const Matrix& A, 
+				  const MVector& b, 
+				  const MVector& x0, 
+				  int max_iter_count, 
+				  double tol) {
 /*
-Conjugate Gradient
-Compute the solution to A*x=b with initial guess x0.
-Runs for no more than itercount iterations and finds solution to within tol.
+Conjugate gradient algorithm
+Compute the solution to A*x=b,
+Inputs:
+	MMatrix A: 					Symmetric pos-def matrix, coefficients
+	MVector b:					Right hand side of equation, data
+	MVector x0: 				Initial guess
+	int 	max_iter_count: 	Maximum number of iterations to compute
+	double 	tol:				Error tolerance to find solution
+Outputs:
+	VectorSolution sol:			Contains solution and number of iterations 
+								taken to converge to within tolerance
 */
+
+	// Initialisation of variables
 	int n = A.Rows();
+	MVector x = x0; 		// Solution vector
+	MVector r = b - A*x;	// Residual vector
+	MVector p = r;			// Conjugate search direction
+	MVector w;				// Store result of A*p for reduced computation
+	MVector rk; 			// Updated residual vector
+	double alpha = 0;		// Step size
+	double beta = 0;		// Scalar to make updated p conjugate to the old p
+	double rdotr = 0;		// Store result of dot(r,r) for reduced computation
 
-	// Initial guess of the zero vector.
-	MVector x = x0;
-
-	MVector r = b - A*x;
-	MVector p = r;
-	MVector w, rk;
-	double alpha = 0, beta = 0, rdotr = 0;
-
+	// Main loop, iteration counter k
 	int k = 0;
-	for (; k < itercount; ++k){
+	for (; k < max_iter_count; ++k){
 
+		// Initialise reusable variables - avoid recomputations
 		w = A * p;
 		rdotr = dot(r, r);
+
+		// Compute step size
 		alpha =  rdotr / dot(p, w);
 
 		// Update the current solution
@@ -50,7 +68,7 @@ Runs for no more than itercount iterations and finds solution to within tol.
 			break;
 		}
 
-		// Compute the variable updates for p and r
+		// Compute the variable updates for beta, p, and r
 		beta = dot(rk, rk) / rdotr;
 		p = rk + beta * p;
 		r = rk;
