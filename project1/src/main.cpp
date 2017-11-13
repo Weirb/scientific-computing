@@ -3,7 +3,6 @@
 #include "mmatrix.h"
 #include "mbandedmatrix.h"
 #include "functions.h"
-#include <cmath>
 
 using namespace std;
 
