@@ -81,6 +81,8 @@ Outputs:
 	return sol;
 }
 
+// Functions for creating various matrices and vectors.
+// Use in testing code and project examples.
 MMatrix laplacian_1d(int n);
 MBandedMatrix laplacian_1d_banded(int n);
 

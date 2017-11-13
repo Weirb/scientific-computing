@@ -1,5 +1,6 @@
 #include "functions.h"
 
+// Create 1d laplacian operator, size nxn
 MMatrix laplacian_1d(int n) {
 
 	MMatrix A(n, n, 0.);
@@ -16,6 +17,7 @@ MMatrix laplacian_1d(int n) {
 	return A;
 }
 
+// Create banded 1d laplacian operator, size nxn
 MBandedMatrix laplacian_1d_banded(int n) {
 
 	MBandedMatrix A(n, n, 1, 1, 0.);
@@ -32,6 +34,7 @@ MBandedMatrix laplacian_1d_banded(int n) {
 	return A;
 }
 
+// Example matrix, depends on parameter m, size nxn
 MMatrix create_matrix2(int n, double m) {
 
 	MMatrix A(n, n, 0.);
@@ -48,16 +51,11 @@ MMatrix create_matrix2(int n, double m) {
 	return A;
 }
 
+// Create 2d laplacian operator, size nxn
 MMatrix laplacian_2d(int n) {
 
 	MMatrix A(n*n, n*n, 0.);
 
-	//MMatrix T = create_matrix1(n);
-	//MMatrix I(n, n);
-	//for (int i = 0; i < n; ++i)
-	//	I(i, i) = 1;
-
-	//A = kronecker(I, T) + kronecker(T, I);
 	for (int i = 0; i < n*n; ++i) {
 		for (int j = 0; j < n*n; ++j) {
 			if (i == j)
@@ -71,6 +69,7 @@ MMatrix laplacian_2d(int n) {
 	return A;
 }
 
+// Create banded 2d laplacian operator, size nxn
 MBandedMatrix laplacian_2d_banded(int n) {
 
 	MBandedMatrix A(n*n, n*n, n, n);
@@ -89,10 +88,13 @@ MBandedMatrix laplacian_2d_banded(int n) {
 	return A;
 }
 
+// Create vector methods
+// First example vector, values depends on size of vector, n
 MVector create_vector1(int n) {
 	return MVector(n, 1 / pow(n + 1, 2));
 }
 
+// Second example vector, constant vector, size n
 MVector create_vector2(int n) {
 	return MVector(n, 2.5);
 }
