@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS_DEBUG=-c -Wall
 CFLAGS_RELEASE=-c -O2 -ffast-math -march=native
-CFLAGS=$(CFLAGS_DEBUG)
+CFLAGS=$(CFLAGS_RELEASE)
 OBJ_PATH=obj
 SRC_PATH=src
 EXECUTABLE=cg.exe
