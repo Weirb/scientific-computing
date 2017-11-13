@@ -17,16 +17,16 @@ public:
 	// constructors
 	MBandedMatrix() : nRows(0), nCols(0) {}
 	MBandedMatrix(int n, int m, int lband, int rband, double x = 0.) :
-		nRows(n), nCols(m), A(n, lband + rband + 1, x), l(lband), r(rband) {}
+		nRows(n), nCols(m), A(n *( lband + rband + 1), x), l(lband), r(rband) {}
 
 	// access element [rvalue]
 	double operator()(int i, int j) const {
-		return A(i, j + l - i);
+		return A[i*(r+l+1) + j + l - i];
 	}
 
 	// access element [lvalue]
 	double &operator()(int i, int j) {
-		return A(i, j + l - i);
+		return A[i*(r+l+1) + j + l - i];
 	}
 
 	// size of matrix: rows and columns
@@ -39,7 +39,7 @@ public:
 	int RBands() const { return r; } // number of right bands
 
 private:
-	MMatrix A; // Sparse MMatrix contains the nonzero elements
+	vector<double> A; // Sparse MMatrix contains the nonzero elements
 	unsigned int nRows, nCols;
 	int l, r; // number of left/right diagonals
 };
