@@ -96,19 +96,3 @@ MVector create_vector1(int n) {
 MVector create_vector2(int n) {
 	return MVector(n, 2.5);
 }
-
-MMatrix kronecker(MMatrix A, MMatrix B) {
-	
-	int m = A.Rows(); int n = A.Cols();
-	int p = B.Rows(); int q = B.Cols();
-
-	MMatrix C(m*p, n*q);
-
-	for (int i = 0; i < m*p; ++i) {
-		for (int j = 0; j < n*q; ++j) {
-			C(i, j) = A(floor(i / p), floor(j / q)) * B(i - floor(i / p)*p, j - floor(j / q)*q);
-		}
-	}
-
-	return C;
-}

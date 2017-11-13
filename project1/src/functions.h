@@ -92,6 +92,4 @@ MBandedMatrix laplacian_2d_banded(int n);
 MVector create_vector1(int n);
 MVector create_vector2(int n);
 
-MMatrix kronecker(MMatrix A, MMatrix B);
-
 #endif
