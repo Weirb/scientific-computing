@@ -119,8 +119,9 @@ Error handling
 The implementation of the \inline{MVector}, \inline{MMatrix}, and \inline{MBandedMatrix} classes can be found in the code listings in the appendix.
 
 % VECTORS AND MATRICES
-The \inline{MMatrix} and \inline{MVector} classes behave intuitively as mathematical matrices and vectors. 
-The underlying data structure for these classes is a \inline{vector<double>} object.
+These classes behave as we would expect from the standard mathematical objects. 
+This had been completed by overloading the C++ operators, \inline{+, -, *, /}, to give reasonable behaviour to the classes.
+The underlying data structure for all of these classes is a \inline{vector<double>} object.
 Accessing elements of a \inline{MVector} is identical to accessing elements of the underlying \inline{vector<double>}.
 Accessing elements of a \inline{MMatrix} requires converting between matrix coordinates and the list coordinates of the \inline{vector}.
 In matrix coordinates, $(i,j)$ specifies the element at the $i^\mathrm{th}$ row and $j^\mathrm{th}$ column.
@@ -139,16 +140,24 @@ Ideally, code reuse leads to fewer bugs as fewer classes and lines of code are i
 
 % SPARSITY, BANDED MATRIX
 The \inline{MBandedMatrix} implementation for a banded matrix behaves identically to an \inline{MMatrix} in the case that both are banded matrices.
-The difference lies in the underlying data structure of the class.
+The difference lies solely in that the structure matters for the \inline{MBandedMatrix}.
 For a matrix $B\in\R^{n\times n}$ with $l$ lower bands and $r$ upper bands, we define a new matrix $B^*\in\R^{n \times (l+r+1)}$ whose elements are
 \[
     b^*_{i,j+l-i} = b_{i,j}.
 \]
-The \inline{MBandedMatrix} allows us to exploit the sparse structure of certain types of matrices.
+The \inline{MBandedMatrix} allows us to exploit the sparse structure of banded matrices.
 In particular, a matrix whose entries are close to the diagonal are most well represented by this class. 
 If $l+r+1 << n$, then we benefit from greatly reduced storage costs.
-Matrices whose bandwidths are large and contain many zero elements between nonzeros on the same row suffer from the storage of several zeros in the underlying data structure.
+Matrices whose bandwidths are large and contain many zero elements between nonzeros on the same row suffer from the storage of several zeros.
 In this case, the cost savings from using an \inline{MBandedMatrix} may not be sufficient to justify its use.
+
+For example, the $n\times n$ 1 dimensional discrete Laplacian operator is a tridiagonal matrix. 
+This has 1 upper band, 1 lower band, as well as entries on the diagonal.
+So storing this using a \inline{MBandedMatrix} requires $3n$ entries, using $3/n$ less space for storage.
+Compare this with the $n^2\times n^2$ 2 dimensional discrete Laplacian operator, which only has 5 nonzero diagonals, but contain $n-2$ zero entries between the nonzeros.
+Using our storage scheme, we require storage of $n^2(2n+1)=2n^3+n^2$ entries. 
+Storing only the nonzero diagonals, we would need to store $5n^2$ entries.
+From this we see for large values of $n$, this storage format is space-inefficient in certain cases and can be optimised.
 
 Alternative sparse storage methods may acheive improved storage savings in cases where bandwidth is large and consists of many zero entries.
 For example, the \textit{compressed sparse row} format involves storage of three arrays consisting of the nonzero elements of a matrix as well as index information.
@@ -160,7 +169,7 @@ This approach to storing sparse matrices is similar to that which is used by MAT
 Another approach to reduce storage would be to use the properties of matrix symmetry. 
 For a symmetric matrix, the elements above and below the diagonal are identical, and so there is no need to store these elements.
 For a banded matrix, this translates to storing only one of the upper or lower bands.
-An $n\times n$ \inline{MBandedMatrix} can be compressed to an $n \times (l+r+1)$ matrix.
+An $n\times n$ \inline{MMatrix} can be compressed to an $n \times (l+r+1)$ \inline{MBandedMatrix}.
 Exploiting symmetry, we can reduce this to storing $n \times (r+1)$ elements.
 
 
