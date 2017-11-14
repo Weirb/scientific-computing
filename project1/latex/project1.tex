@@ -1,3 +1,8 @@
+% https://www.siam.org/meetings/la09/talks/oleary.pdf
+% http://www2.math.ethz.ch/education/bachelor/seminars/fs2008/nas/filimon.pdf
+% http://epubs.siam.org/doi/pdf/10.1137/1031003
+% http://www.sam.math.ethz.ch/~mhg/pub/biksm.pdf
+
 \begin{abstract}
     Conjugate gradient algorithm... Laplacian operator... 
 \end{abstract}
@@ -19,26 +24,31 @@ Top 10 algorithms 20th century. How does it relate to wider mathematical communi
 
 \fi
 
-Conjugate gradient is known as a Krylov subspace method. 
-In 2000, this class of methods was voted third in the top 10 algorithms of the 20th century.
+Krylov subspace methods solve the linear system $Ax=b$ by building information about the solution from the span of the shifted Krylov subspace 
+\[
+    \mathcal{K}_k(A, r^{(0)}) = \span\left( r^{(0)}, Ar^{(0)}, A^2r^{(0)}, \ldots, A^{k-1}r^{(0)} \right),
+\]
+where $r^{(0)} = A - bx^{(0)}$ for some initial guess $x^{(0)}$.
+In 2000, this class of methods was listed in the top 10 algorithms whose influence has been greatest on science and engineering of the 20th century \cite{top10}. 
+Along with other methods, such as the steepest descent, Arnoldi, and Lanczos algorithms, the conjugate gradient method shares a highly regarded spot in mathematics.
 
-It was developed by Hestenes and Steifel.
-Can be thought of as a direct method or an iterative method.
-Was not adopted initially as a direct method.
-Much more powerful when performed iteratively.
-Only works for symmetric and positive definite matrices.
+The conjgate gradient algorithm was primarily developed by Hestenes and Steifel and was part of a number of important computational innovations at the time \cite{cghist}.
+Originally, the algorithm was a direct method, and this was a cause of the algorithm's lack of initial adoption.
+% When viewed as an iterative method, the algorithm is theoretically identical to the direct method but converges in fewer iterations 
+Although, conjugate gradient can be used as both a direct and iterative solver, it is much more powerful when performed iteratively, and performs well for sparse matrices.
+It should be noted that the method requires the matrix $A$ to be symmetric and positive definite, however modifications of the algorithm remove these constraints.
+For example, the biconjugate gradient stabilised algorithm may be used on nonsymmetric problems. 
 
-Problem we are looking at is Poisson problem in 1 and 2 dimensions.
-This is the Laplace equation with nonzero right hand side, which consists of second order derivatives with respect to indepdendent variables.
-Elliptic PDE whose solutions are harmonic functions
+One of the problems we will be using to test our implementation is the discretisation of the Poisson problem in 1 and 2 dimensions.
+The Poisson problem is the Laplace equation with nonzero right hand side, which consists of second order derivatives with respect to the indepdendent variables.
+This is an elliptic PDE whose solutions are harmonic functions. 
+The equation features in electrostatics, fluid dynamics, and several other areas of physics.
+For example, in heat conduction, the equation represents the steady-state heat equation.
+The discretisation leads to a symmetric and positive definite system of linear equations, and so the conjugate gradient algorithm is an appropriate solver in this case.
+Thus the study of efficient methods for solving linear systems involving this problem are desired.
 
-In the discretisation of the Poisson problem, we obtain a linear system of equations.
-This system is symmetric and so can be solved using cg.
-
-Laplace's equation features in electrostatics, fluid dynamics, and several other areas of physics.
-Thus efficient methods for solving linear systems involving this problem are desired.
-
-
+In this project, we implement matrix and vector classes in C++ in order to implement and study the conjugate gradient algorithm.
+In this report, we discuss the mathematics of the conjugate gradient algorithm, as well as discuss the results of the application of the algorithm on different problems.
 
 
 \section{Mathematics}
@@ -54,6 +64,11 @@ How do we get good/bad convergence?
 Proof of convergence
 Proof of complexity
 \fi
+
+\subsection{Discretisation of PDEs}
+
+% In the discretisation of the Poisson problem, we obtain a linear system of equations.
+
 
 \subsection{Conjugate Gradient}
 \label{sec:cg}
@@ -252,3 +267,19 @@ Results
 
 
 \section{Code Listings}
+
+
+\begin{bibliograhy}
+
+\bibitem{top10}
+    J. Dongarra and F. Sullivan, 
+    "Guest Editors Introduction to the top 10 algorithms",
+    in Computing in Science & Engineering, vol. 2, no. 1, pp. 22-23, Jan.-Feb. 2000.
+    doi: 10.1109/MCISE.2000.814652
+
+\bibitem{cghist}
+    Gene H. Golub and Dianne P. O’Leary,
+    "Some History of the Conjugate Gradient and Lanczos Algorithms: 1948–1976",
+    SIAM Review 1989 31:1, 50-102 
+    
+\end{bibliograhy}
