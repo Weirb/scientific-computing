@@ -86,9 +86,9 @@ Hence, by minimising $f(x)$, we find the solution to the linear system.
 
 % Discussion of algorithm
 Two vectors $u, v$ are conjugate if $u^T v = 0$. 
-Two vectors are said to be $A$-conjugate or conjugate with respect to $A$ if $u^T A v = 0$.
+Two vectors are said to be $A$-orthogonal or conjugate with respect to $A$ if $u^T A v = 0$.
 Conjugate vectors then form a linearly independent set.
-The CG algorithm selects $A$-conjugate search directions and finds the optimal step size in that direction.
+The CG algorithm selects $A$-orthogonal search directions and finds the optimal step size in that direction.
 
 This has the benefit of exclusively searching along previously unsearched directions and for the optimal search step for the solution.
 Contrast this with steepest descent, which has the possibility of overshooting the solution.
@@ -100,6 +100,27 @@ Thus we can expect convergence to be much more rapid when these two methods are 
 For certain matrices, $A$, we can expect immediate convergence. single eigenvalue
 In the case that 
 
+
+\subsection{Different Matrices}
+
+\iffalse
+
+For the matrix A dependent on m, the convergence of cg breaks in general.
+Since A is not symmetric, the conditions for convergence do not hold.
+However, for large values of m, we may still find convergence for the problem.
+
+If m is large, we have "strong" diagonal dominance. 
+So we are effectively solving a diagonal system.
+b is a constant vector, so x can be approximated by 2.5/a_{ii}.
+If m is small, approximately 0, no convergence at all.
+How does this play into cg algorithm?
+
+We need symmetry and pos defness for convergence.
+May not have set of linearly independent eigenvectors
+So the solution will not converge
+
+
+\fi
 
 \section{Implementation}
 
