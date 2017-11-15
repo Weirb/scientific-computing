@@ -5,6 +5,10 @@
 
 # Ignore generated data files
 *.dat
+*.eps
+figures/
+obj/
+*.asv
 
 # LaTeX output
 *.aux
