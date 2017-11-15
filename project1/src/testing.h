@@ -11,6 +11,8 @@
 #include <vector>
 #include <string>
 
+const string DATAPATH = "/data";
+
 // Task 3.2.1.3
 void test_vector_overloads(){
 /*
@@ -181,7 +183,8 @@ void create_cg_plot_laplacian_1d(){
         // Compute solution
         sol = cg(A, b, x0, 1000, tol);
 
-        f << n << endl;
+        // Output problem size, pad fields
+        f << n << "\t0\t0" <<  endl;
         for (int i = 0; i < n; ++ i){
             // Output format: tab separated values
             //  i;
@@ -205,7 +208,7 @@ void create_cg_table_laplacian_1d(){
     double tol = 1e-6;
     VectorSolution sol;
 
-    double start, end;
+    double start = 0., end = 0.;
 
     // Output files
     ofstream f("task3.2.4.7.dat");
@@ -215,7 +218,7 @@ void create_cg_table_laplacian_1d(){
         exit(-1);
     }
 
-    for (int k = 0; k < 15; ++k){
+    for (int k = 0; k < 40; ++k){
 
         int n = 5 * (k+1);
         A = laplacian_1d(n);
@@ -240,64 +243,70 @@ void create_cg_table_laplacian_1d(){
 
 // Task 3.2.4.8, part 1
 void create_cg_plot_matrix2(){
-
+/*
+Solve the previous problems, but with the matrix specified in the function
+    create_matrix2();
+*/
     // CG variables
-    MMatrix A;
-    MVector b, x0;
-    double tol = 1e-6;
+
+    double tol = 1e-3;
+    int max_iterations = 10000;
     VectorSolution sol;
 
     // Output files
-    ofstream f("task3.2.4.6.dat");
+    ofstream f("task3.2.4.8-1.dat");
     if (!f.is_open()){
-        cerr << "Unable to open \"task3.2.4.6.dat\" for writing.\n"
+        cerr << "Unable to open \"task3.2.4.8-1.dat\" for writing.\n"
              << "Exiting...\n";
         exit(-1);
     }
 
     // Size of problems to solve
     vector<int> ns = {10, 25, 100};
+    vector<double> ms = {10., 5., 1., 0.1};
 
-    for (size_t k = 0; k < ns.size(); ++k){
+    for (size_t n_count = 0; n_count < ns.size(); ++n_count){
+        int n = ns[n_count];
+        for (size_t m_count = 0; m_count < ms.size(); ++m_count){
 
-        int n = ns[k];
-        A = laplacian_1d(n);
-        b = create_vector1(n);
-        x0 = MVector(n, 0.);
-        
-        // Compute solution
-        sol = cg(A, b, x0, 1000, tol);
+            double m = ms[m_count];
+            MMatrix A = create_matrix2(n, m);
+            MVector b = create_vector2(n);
+            MVector x0(n, 0.);
 
-        f << n << endl;
-        for (int i = 0; i < n; ++ i){
-            // Output format: tab separated values
-            //  i;
-            //  (i+1)/(n+1);
-            //  x_i;
-            f << i << "\t"
-              << (i + 1) / double(n + 1) << "\t"
-              << sol.solution(i) << endl;
+            // Compute solution
+            sol = cg(A, b, x0, max_iterations, tol);
+            f << n << "\t" << m <<  "\t0" << endl;
+            for (int i = 0; i < n; ++ i){
+                // Output format: tab separated values
+                //  i;
+                //  (i+1)/(n+1);
+                //  x_i;
+                f << i << "\t"
+                << (i + 1) / double(n + 1) << "\t"
+                << sol.solution(i) << endl;
+            }
         }
-        
     }
     f.close();
 }
 
 // Task 3.2.4.8, part 2
 void create_cg_table_matrix2(){
-    
-    int n = 100;
-
+/*
+Create the table of values for timing and convergence of the matrix specified in
+    create_matrix2()
+*/
     // CG variables
     MMatrix A;
-    MVector b = create_vector2(n);
-    MVector x0(n, 0.);
+    MVector b, x0;
     double tol = 1e-3;
+    int max_iterations = 10000;
+
     VectorSolution sol;
 
-    double start, end;
-    double m;
-
+    double start = 0., end = 0.;
+    
     // Output files
     ofstream f("task3.2.4.8-2.dat");
     if (!f.is_open()){
@@ -306,29 +315,119 @@ void create_cg_table_matrix2(){
         exit(-1);
     }
     
-    for (int k = 0; k < 10; ++k){
+    // vector<int> ns = {10, 25, 50, 75, 100};
+    vector<double> ms = {10., 5., 1., 0.1};
 
-        // m = 100 * pow(10,-k);
-        // m = 10 - k;
-        // m = 5 - 0.1*k;
-        // m = 4.8 - 0.01*k;
-        // m = 4.75 - 0.001*k;
-        // m = 4.743 - 0.0001*k;
-        m = 4.7429 - 0.00001*k;
-        A = create_matrix2(n, m);
+    for (size_t m_count = 0; m_count < ms.size(); ++m_count){
+        
+        for (int k = 0; k < 20; ++k){
+
+            int n = 5 * (k + 1);
+
+            double m = ms[m_count];
+            
+            A = create_matrix2(n, m);
+            b = create_vector2(n);
+            x0 = MVector(n, 0.);
+
+            // Compute solution
+            start = Timer();
+            sol = cg(A, b, x0, max_iterations, tol);
+            end = Timer();
+
+            // Output format: tab separated values
+            //  n;
+            //  m;
+            //  iterations to converge;
+            //  time to converge;
+            f << n << "\t" << m << "\t"
+            << sol.iteration_count << "\t"
+            << (end-start) << endl;
+        }
+    }
+    f.close();
+}
+
+// Task 3.2.5.1
+void test_mbandedmatrix_impl(){
+
+    int n = 5, l = 1, r = 1;
+    MBandedMatrix A(n, n, l, r, 0.);
+    A(0, 0) = 1;
+    A(1, 1) = 2;
+    A(2, 2) = 3;
+    A(3, 3) = 4;
+    A(4, 4) = 5;
+    A(5, 5) = 6;
+    A(2, 3) = -9;
+
+    cout << A << endl;
+}
+
+// Task 3.2.5.4
+void test_mbandedmatrix_cg_impl(){
+
+    // Define variables for banded and standard matrix
+    int n = 25;
+    MMatrix A1 = laplacian_1d(n);
+    MBandedMatrix A2 = laplacian_1d_banded(n);
+    MVector b = create_vector1(n);
+    MVector x0(n, 0.);
+    double tol = 1e-6;
+
+    // Compute solutions for each matrix
+    VectorSolution sol_matr = cg(A1, b, x0, 1000, tol);
+    VectorSolution sol_band = cg(A2, b, x0, 1000, tol);
+
+    // Compute the residuals for each matrix
+    MVector r1 = b - A1 * sol_matr.solution;
+    MVector r2 = b - A2 * sol_band.solution;
+
+    double rdiff = (r1 - r2).L2Norm();
+    if (rdiff < tol){
+        cout << "MBandedMatrix solution for CG algorithm agrees with MMatrix solution." << endl;
+    } else {
+        cout << "MBandedMatrix solution for CG algorithm does not agree with MMatrix solution." << endl;
+    }
+    cout << "Norm of difference of residuals: " << rdiff << endl;
+}
+
+// Task 3.2.5.6
+void create_table_laplacian_1d_banded(){
+    // CG variables
+    MBandedMatrix A;
+    MVector b, x0;
+    double tol = 1e-6;
+    VectorSolution sol;
+
+    double start, end;
+
+    // Output files
+    ofstream f("task3.2.5.6.dat");
+    if (!f.is_open()){
+        cerr << "Unable to open \"task3.2.5.6.dat\" for writing.\n"
+             << "Exiting...\n";
+        exit(-1);
+    }
+
+    // We get memory issues when n > 100
+    for (int k = 0; k < 40; ++k){
+
+        int n = 5 * (k+1);
+        A = laplacian_1d_banded(n);
+        b = create_vector1(n);
+        x0 = MVector(n, 0.);
         
         // Compute solution
         start = Timer();
-        sol = cg(A, b, x0, 1000000, tol);
+        sol = cg(A, b, x0, 1000, tol);
         end = Timer();
 
         // Output format: tab separated values
         //  n;
-        //  m;
         //  iterations to converge;
         //  time to converge;
         f << n << "\t"
-          << m << "\t"
           << sol.iteration_count << "\t"
           << (end-start) << endl;
     }
@@ -359,7 +458,7 @@ void create_timings_laplace_operator_2d(){
     double start1 = 0, end1 = 0;
     double start2 = 0, end2 = 0;
 
-    for (int k = 0; k < 40; ++k ){
+    for (int k = 0; k < 20; ++k ){
         int n = 5 * (k+1);
         A1 = laplacian_2d(n);
         A2 = laplacian_2d_banded(n);
@@ -382,7 +481,7 @@ void create_timings_laplace_operator_2d(){
         //  iterations to converge for MMatrix;
         //  time to execute cg for MBandedMatrix;
         //  iterations to converge for MBandedMatrix;
-        f << n << "\t" << (end1 - start1) << "\t" 
+        f << n*n << "\t" << (end1 - start1) << "\t" 
                        << sol1.iteration_count << "\t"
                        << (end2 - start2) << "\t" 
                        << sol2.iteration_count << endl;
@@ -414,6 +513,8 @@ void create_plot_data_laplace_operator_2d(){
 
     VectorSolution sol = cg(A, b, x0, maxiter, tol);
 
+    // We want n values (k*n..k*n-1) for k=0..n-1 on each row.
+    // Don't include the final tab character at the end of each line.
     for (int i = 0; i < n; ++i){
         for (int j = 0; j < n - 1; ++j){
             f << sol.solution(i * n + j) << "\t";

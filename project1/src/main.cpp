@@ -7,7 +7,33 @@
 
 using namespace std;
 
+void generate_all_data() {
+	
+	cout << "create_cg_plot_laplacian_1d" << endl;
+	create_cg_plot_laplacian_1d();
+
+	cout << "create_cg_table_laplacian_1d" << endl;
+	create_cg_table_laplacian_1d();
+
+	cout << "create_table_laplacian_1d_banded" << endl; 
+	create_table_laplacian_1d_banded();
+
+	cout << "create_timings_laplace_operator_2d" << endl;
+	create_timings_laplace_operator_2d();
+
+	cout << "create_plot_data_laplace_operator_2d" << endl; 
+	create_plot_data_laplace_operator_2d();
+
+	cout << "create_cg_plot_matrix2" << endl;
+	create_cg_plot_matrix2();
+
+	cout << "create_cg_table_matrix2" << endl;
+	create_cg_table_matrix2();
+}
+
 int main(int argc, char** argv){
+
+	generate_all_data();
 
 	return 0;
 }
