@@ -16,8 +16,8 @@ $(OBJ_PATH)/%.o: $(SRC_PATH)/%.cpp
 	mkdir -p $(OBJ_PATH)
 	$(CC) $(CFLAGS) -o $@ $<
 
-figures: all
-	$(EXECUTABLE)
+figures:
+	# $(EXECUTABLE)
 	mkdir -p $(FIGURE_PATH);
 	matlab -r 'gen_plots(); exit;';
 
