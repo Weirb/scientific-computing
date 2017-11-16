@@ -26,7 +26,7 @@ Top 10 algorithms 20th century. How does it relate to wider mathematical communi
 
 Krylov subspace methods solve the linear system $Ax=b$ by building information about the solution from the span of the shifted Krylov subspace 
 \[
-    \mathcal{K}_k(A, r^{(0)}) = \span\left( r^{(0)}, Ar^{(0)}, A^2r^{(0)}, \ldots, A^{k-1}r^{(0)} \right),
+    \mathcal{K}_k(A, r^{(0)}) = \mathrm{span}\left( r^{(0)}, Ar^{(0)}, A^2r^{(0)}, \ldots, A^{k-1}r^{(0)} \right),
 \]
 where $r^{(0)} = A - bx^{(0)}$ for some initial guess $x^{(0)}$.
 In 2000, this class of methods was listed in the top 10 algorithms whose influence has been greatest on science and engineering of the 20th century \cite{top10}. 
@@ -51,7 +51,8 @@ In this project, we implement matrix and vector classes in C++ in order to imple
 In this report, we discuss the mathematics of the conjugate gradient algorithm, as well as discuss the results of the application of the algorithm on different problems.
 
 
-\section{Mathematics}
+\section{Conjugate Gradient}
+\label{sec:cg}
 
 \iffalse
 CG discussion:
@@ -65,23 +66,9 @@ Proof of convergence
 Proof of complexity
 \fi
 
-\subsection{Discretisation of PDEs}
-
-% In the discretisation of the Poisson problem, we obtain a linear system of equations.
-
-
-\subsection{Conjugate Gradient}
-\label{sec:cg}
-
 % Steepest descent vs conjugate gradient
 % Definition of A-conjugate vectors
 
-
-% Minimisation of function <=> Solution to Ax=b
-% Pos-def => convex => local min is global min
-% Begin with initial guess, find min of f -> get sol to Ax=b
-
-% Motivation of algorithm
 Consider the problem of minimising the function
 \[
     f(x) = \frac{1}{2} x^T A x - b^T x,
@@ -90,69 +77,63 @@ with $A$ symmetric and positive definite. This is minimised exactly when
 \[
     \nabla f(x) = A x - b = 0.
 \]
-Hence, the solution to $Ax=b$ is the minimiser of $f(x)$.
-Consider the Hessian of $f(x)$,
+The Hessian of $f(x)$ is
 \[
-    \nabla^2 f(x) = A.
+    \nabla^2 f(x) = A,
 \]
-Since $A$ is positive definite, this means that $f(x)$ is a convex function.
-Convexivity gives us that any local minima is in fact a global minimum.
-Hence, by minimising $f(x)$, we find the solution to the linear system.
+and since $A$ is positive definite, this means that $f(x)$ is a convex function.
+Convexivity gives us that any local minimum is a global minimum.
+Hence, the solution to $Ax=b$ is the minimiser of $f(x)$.
+So by minimising $f(x)$, we will converge to the global minimum and find the solution to the linear system.
 
 % Discussion of algorithm
-Two vectors $u, v$ are conjugate if $u^T v = 0$. 
-Two vectors are said to be $A$-orthogonal or conjugate with respect to $A$ if $u^T A v = 0$.
-Conjugate vectors then form a linearly independent set.
-The CG algorithm selects $A$-orthogonal search directions and finds the optimal step size in that direction.
+Two vectors are said to be $A$-orthogonal or conjugate with respect to $A$ if $\langle u,v \rangle = u^T A v= 0$.
+
+Starting with an initial guess, $x^{0}$, the CG algorithm builds
+The method constructs mutually conjugate vectors from the residuals and finds the optimal step size along that vector to search for the solution.
+This is done by constructing the vectors using Gram-Schmidt orthogonalisation.
+At step $k$, we have a set of mutually conjugate vectors $U=\{p_0, p_1,\ldots,p_k\}$, that is, they are pairwise orthogonal with respect to the inner product $\langle u,v \rangle$.
+To create the vector $p_{k+1}$ conjugate to all the other vectors in $U$, we compute the orthogonal projection of the residual at step $k$ onto the subspace $U$.
+% This involves $v$ is created orthgonal to by projecting 
+By removing the requirement the search directions be mutually conjugate, we obtain the gradient descent algorithm.
 
 This has the benefit of exclusively searching along previously unsearched directions and for the optimal search step for the solution.
 Contrast this with steepest descent, which has the possibility of overshooting the solution.
 Thus we can expect convergence to be much more rapid when these two methods are compared.
 
 
+The main algorithm of study in this project is the conjguate gradient method for solving symmetric, positive definite linear systems iteratively.
+Following the algorithm described in the handout, and as explained in section \ref{sec:cg}, the implementation is straightforward.
+After initialisation of the variables, we begin our iteration stage. 
+Given a maximum number of iterations and a tolerance, we guarantee that iteration has a fixed endpoint.
+This will be the first of either the $L^{2}$ norm of the residual is below the tolerance of the maximum iteration count is reached.
+
+In order to avoid recomputing dot products and matix-vector products, certain variables are used for storage and reuse.
+For example, we use $r_k \cdot r_k$ twice and $A p_k$ twice. By storing these results we avoid multiple computations.
+
+
 \subsection{Rate of convergence}
 
-For certain matrices, $A$, we can expect immediate convergence. single eigenvalue
-In the case that 
+For certain matrices, $A$, we can expect immediate convergence.
+Consider the case where the matrix $A$ is symmetric and has a single eigenvalue, $\lambda>0$.
 
 
-\subsection{Different Matrices}
 
-\iffalse
+\section{Matrix Classes}
+\label{sec:classes}
 
-For the matrix A dependent on m, the convergence of cg breaks in general.
-Since A is not symmetric, the conditions for convergence do not hold.
-However, for large values of m, we may still find convergence for the problem.
+The implementation of the \inline{MVector}, \inline{MMatrix}, and \inline{MBandedMatrix} classes can be found in  section \ref{sec:code} in code listings \ref{lst:mvector}, \ref{lst:mmatrix}, and \ref{lst:mbandedmatrix}, respectively.
 
-If m is large, we have "strong" diagonal dominance. 
-So we are effectively solving a diagonal system.
-b is a constant vector, so x can be approximated by 2.5/a_{ii}.
-If m is small, approximately 0, no convergence at all.
-How does this play into cg algorithm?
+\subsection{The \inline{MVector} class}
 
-We need symmetry and pos defness for convergence.
-May not have set of linearly independent eigenvectors
-So the solution will not converge
+The vector class is created distinct from the matrix class.
+Although vector and matrix objects interact with each other in the expected way, a representation of a vector $x$ as a matrix in $x\in\R^{n\times 1}$ is also possible.
+In this case, a vector $x$ could be instantiated as \inline{MMatrix x(n,1);}.
+Then the product of a vector and matrix is defined as long as the corresponding dimensions match, so it would be necessary to consider the dimensions of matrices in the necessary operations.
+By making this change, we reduce duplicate code as we can reuse the code for stream outputs, matrix-matrix multiplication, and scalar-matrix multiplication.
+Ideally, code reuse leads to fewer bugs as fewer classes and lines of code are involved in the project.
 
-
-\fi
-
-\section{Implementation}
-
-\iffalse
-Implementation discussion:
-
-+Better band storage for wide bands with lots of zeros. Store the nonzeros with their locations.
--Better interaction with the program for inputting data or getting results. Use of a scripting language and parser. 
-+Should treat vectors as matrices, reduces number of classes, fewer bugs and easier implementation.
-+Sparse matrices
-Unit tests
-Error handling
-\fi
-
-\subsection{Matrix Classes}
-
-The implementation of the \inline{MVector}, \inline{MMatrix}, and \inline{MBandedMatrix} classes can be found in the code listings in the appendix.
+\subsection{The \inline{MMatrix} class}
 
 % VECTORS AND MATRICES
 These classes behave as we would expect from the standard mathematical objects. 
@@ -165,16 +146,8 @@ To convert to list coordinates, observe that $j$ is the offset from the start of
 If each row consists of $n$ elements, i.e. the number of columns, then we have in list coordinates, $(i,j) \mapsto i*n + j$.
 
 
-% VECTOR IS DISTINCT FROM THE MATRIX
-The vector class is created distinct from the matrix class.
-Although vector and matrix objects interact with each other in the expected way, a representation of a vector $x$ as a matrix in $x\in\R^{n\times 1}$ is also possible.
-In this case, a vector $x$ could be instantiated as \inline{MMatrix x(n,1);}.
-Then the product of a vector and matrix is defined as long as the corresponding dimensions match, so it would be necessary to consider the dimensions of matrices in the necessary operations.
-By making this change, we reduce duplicate code as we can reuse the code for stream outputs, matrix-matrix multiplication, and scalar-matrix multiplication.
-Ideally, code reuse leads to fewer bugs as fewer classes and lines of code are involved in the project.
+\subsection{The \inline{MBandedMatrix} class}
 
-
-% SPARSITY, BANDED MATRIX
 The \inline{MBandedMatrix} implementation for a banded matrix behaves identically to an \inline{MMatrix} in the case that both are banded matrices.
 The difference lies solely in that the structure matters for the \inline{MBandedMatrix}.
 For a matrix $B\in\R^{n\times n}$ with $l$ lower bands and $r$ upper bands, we define a new matrix $B^*\in\R^{n \times (l+r+1)}$ whose elements are
@@ -209,23 +182,54 @@ An $n\times n$ \inline{MMatrix} can be compressed to an $n \times (l+r+1)$ \inli
 Exploiting symmetry, we can reduce this to storing $n \times (r+1)$ elements.
 
 
-\subsection{Conjugate Gradient}
-
-The main algorithm of study in this project is the conjguate gradient method for solving symmetric, positive definite linear systems iteratively.
-Following algorithm \ref{alg:cg}, as explained in section \ref{sec:cg}, the implementation is straightforward.
-After initialisation of the variables, we begin our iteration stage. 
-Given a maximum number of iterations and a tolerance, we guarantee that iteration has a fixed endpoint.
-This will be the first of either the $L^{2}$ norm of the residual is below the tolerance of the maximum iteration count is reached.
-
-In order to avoid recomputing dot products and matix-vector products, certain variables are used for storage and reuse.
-For example, we use $r_k \cdot r_k$ twice and $A p_k$ twice. By storing these results we avoid multiple computations.
-
-
 \section{Results}
 
+\subsection{Rates of convergence}
+
+
+
+\subsection{Comparison of matrix classes}
+\def\mm{\inline{MMatrix}}
+\def\mb{\inline{MBandedMatrix}}
+
+The implementation of the matrix classes \mm and \mb can be found in listings \ref{lst:mmatrix} and \ref{lst:mbandedmatrix}, respectively.
+A discussion of the implementation can be found in section \ref{sec:classes}.
+
+
+
+Firstly, we should expect that the solution generated by these classes would be the same.
+The \mb is only a reduced memory representation of the \mm, and so no additional activity should exist beyond element access and storage.
+Indeed, we find this to be the case in tests and in plots comparing the iterations to converge, such as figure \ref{fig:2d-matrix-type-compare-iter}, where the number of iterations for each problem size coincide for both classes.
+
+The only computations involving a matrix in the CG algorithm are matrix-vector products.
+A standard matrix-vector product consists of $O(n^2)$ operations.
+As a costly and frequently used operation, the implementation would benefit from any reduction of this cost.
+By using the \mm class, we will incur the full cost of a matrix-vector product.
+However, using the \mb, we can reduce the cost of matrix-vector products to $O(n)$.
+This applies in the case where $1+l+r<<n$, since if $1+l+r\approx n$, there will be no cost savings since the banded matrix will be dense.
+Since we are performing fewer computations when calculating matrix-vector products using a \mb, we would expect that the run time of the algorithm is reduced significantly.
+Figure \ref{fig:2d-matrix-type-compare-time} clearly shows the benefit of reduced computation.
+The straight lines on the log-log scale plot indicate that there is a polynomial relationship between the time The red points represent the 
+
+
+
 \iffalse
-Results:
-Graphs, errors, convergence rates,
+\subsection{Different Matrices}
+For the matrix A dependent on m, the convergence of cg breaks in general.
+Since A is not symmetric, the conditions for convergence do not hold.
+However, for large values of m, we may still find convergence for the problem.
+
+If m is large, we have "strong" diagonal dominance. 
+So we are effectively solving a diagonal system.
+b is a constant vector, so x can be approximated by 2.5/a_{ii}.
+If m is small, approximately 0, no convergence at all.
+How does this play into cg algorithm?
+
+We need symmetry and pos defness for convergence.
+May not have set of linearly independent eigenvectors
+So the solution will not converge
+
+
 \fi
 
 
@@ -245,41 +249,78 @@ Parallelisation, optimisations
 Results
 \fi
 
+\begin{thebibliography}{9}
+    
+    \bibitem{top10}
+        J. Dongarra and F. Sullivan, 
+        "Guest Editors Introduction to the top 10 algorithms",
+        in Computing in Science \& Engineering, vol. 2, no. 1, pp. 22-23, Jan.-Feb. 2000.
+        doi: 10.1109/MCISE.2000.814652
+    
+    \bibitem{cghist}
+        Gene H. Golub and Dianne P. O’Leary,
+        "Some History of the Conjugate Gradient and Lanczos Algorithms: 1948–1976",
+        SIAM Review 1989 31:1, 50-102 
+        
+\end{thebibliography}
+
 \clearpage
 \appendix
+
+\section{Figures}
+
+\begin{figure}[h]
+	\centering
+    \includegraphics[width=0.9\textwidth]{figures/2d-matrix-type-compare-iter.eps}
+    \caption{Figure}
+    \label{fig:2d-matrix-type-compare-iter}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+    \includegraphics[width=0.9\textwidth]{figures/2d-matrix-type-compare-time.eps}
+    \caption{Figure}
+    \label{fig:2d-matrix-type-compare-time}
+\end{figure}
+
+
+
 \section{Tables}
 
+\bgroup
+\def\arraystretch{1.1}
+\begin{table}[ht!]
+\caption{Table 1}
+\label{tab:1}
+\csvstyle{myTableStyle}{longtable=|C{1.5cm}|C{2cm}|C{2cm}|C{2cm}|C{2cm}|,
+% table head= \hline $n$ & Iteration count & Execution time \\ \hline,
+table head=\hline & \multicolumn{2}{|c|}{\bfseries MMatrix} & \multicolumn{2}{|c|}{\bfseries MBandedMatrix}\\ $n$ &  Execution time & Iteration count & Execution time & Iteration count \\ \hline,
+late after line=\\\hline, no head, separator=tab}
+\csvreader[myTableStyle]{data/task3.3.4.dat}{1=\ci, 2=\cii, 3=\ciii, 4=\civ, 5=\cv}
+{\ci & \cii & \ciii & \civ & \cv}
+\end{table}
+\egroup
 
-\section{Algorithms}
+\bgroup
+\def\arraystretch{1.0}
+\begin{table}[ht!]
+\caption{Table 1}
+\label{tab:1}
+\csvstyle{myTableStyle}{longtable=|C{1.5cm}|C{3cm}|C{3cm}|,
+table head= \hline $n$ & Iteration count & Execution time \\ \hline,
+late after line=\\\hline, no head, separator=tab}
+\csvreader[myTableStyle]{data/task3.2.4.7.dat}{1=\ci, 2=\cii, 3=\ciii}
+{\ci & \cii & \ciii}
+\end{table}
+\egroup
 
-% Conjugate gradient algorithm
-
-\begin{algorithm}[H]
-\KwData{Symmetric, positive definite matrix $A\in\R^{n\times n}$}
-\KwData{Data vector $b\in\R^n$}
-\KwResult{Vector $x$, solving $Ax=b$}
-
-
-
-\caption{Conjugate Gradient}
-\label{alg:cg}
-\end{algorithm}
 
 
 \section{Code Listings}
+\label{sec:code}
 
+\lstinputlisting[language=C++,caption=Filename: mvector.h. Mathematical vector implementation in C++.,label=lst:mvector]{src/mvector.h}
 
-\begin{bibliograhy}
+\lstinputlisting[language=C++,caption=Filename: mmatrix.h. Mathematical matrix implementation in C++.,label=lst:mmatrix]{src/mmatrix.h}
 
-\bibitem{top10}
-    J. Dongarra and F. Sullivan, 
-    "Guest Editors Introduction to the top 10 algorithms",
-    in Computing in Science & Engineering, vol. 2, no. 1, pp. 22-23, Jan.-Feb. 2000.
-    doi: 10.1109/MCISE.2000.814652
-
-\bibitem{cghist}
-    Gene H. Golub and Dianne P. O’Leary,
-    "Some History of the Conjugate Gradient and Lanczos Algorithms: 1948–1976",
-    SIAM Review 1989 31:1, 50-102 
-    
-\end{bibliograhy}
+\lstinputlisting[language=C++,caption=Filename: mbandedmatrix.h. Banded matrix implementation in C++.,label=lst:mbandedmatrix]{src/mbandedmatrix.h}
