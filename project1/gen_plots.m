@@ -1,17 +1,19 @@
 function [] = gen_plots()
+    laplace_2d_plot()
+    laplace_1d_banded_normal_time_iter_comparison_plot()
 
-laplace_2d_banded_normal_time_iter_comparison_plot();
-laplace_1d_banded_normal_time_comparison_plot();
-laplace_1d_banded_iter_time_plot();
-laplace_1d_iter_time_plot();
-laplace_2d_plot();
-laplace_1d_sol_plot();
+    laplace_2d_banded_normal_time_iter_comparison_plot();
+    laplace_1d_banded_normal_time_comparison_plot();
+    laplace_1d_banded_iter_time_plot();
+    laplace_1d_iter_time_plot();
+    laplace_2d_plot();
+    laplace_1d_sol_plot();
 
-matrix2_time_iter_plot();
-matrix2_sol_plot();
-matrix2_create_exact_solution_plot();
+    matrix2_time_iter_plot();
+    matrix2_sol_plot();
+    matrix2_create_exact_solution_plot();
 
-close all;
+    close all;
 end
 
 function [] = matrix2_create_exact_solution_plot()
@@ -49,7 +51,6 @@ grid on;
 
 saveas(gcf, sprintf('figures/mat2-exact-sol'), 'epsc');
 
-
 end
 
 function [] = matrix2_time_iter_plot()
@@ -61,8 +62,8 @@ for i = 0:3
     
     n = tmp(:,1);
     m = tmp(:,2);
-    iter = tmp(:,2);
-    time = tmp(:,3);
+    iter = tmp(:,3);
+    time = tmp(:,4);
     
     % Iteration plot
     figure();
@@ -134,6 +135,49 @@ end
 
 end
 
+function [] = laplace_1d_banded_normal_time_iter_comparison_plot()
+
+data = load('1d_timings.dat');
+n = data(:,1);
+
+% Plot iterations to converge
+figure();
+hold on;
+
+set(gca,'XScale','linear','YScale','linear');
+plot(n, data(:,3), 'bx'); % MMatrix iterations
+plot(n, data(:,5), 'ro'); % MBandedMatrix iterations
+
+set(findall(gcf,'-property','FontSize'),'FontSize',16);
+title(sprintf('Comparison of iteration counts for 1D Poisson equation\nusing MMatrix and MBandedMatrix classes.'));
+xlabel('Size of matrix');
+ylabel('Iterations to converge');
+legend('MMatrix', 'MBandedMatrix');
+legend('Location', 'northwest');
+grid on;
+
+saveas(gcf, 'figures/1d-matrix-type-compare-iter', 'epsc');
+
+% Plot time to converge
+figure();
+hold on;
+
+set(gca,'XScale','log','YScale','log');
+plot(n, data(:,2), 'bx'); % MMatrix timing
+plot(n, data(:,4), 'rx'); % MBandedMatrix timing
+
+set(findall(gcf,'-property','FontSize'),'FontSize',16);
+title(sprintf('Comparison of execution time for 1D Poisson equation\nusing MMatrix and MBandedMatrix classes.'));
+xlabel('Size of matrix');
+ylabel('Time to converge');
+legend('MMatrix', 'MBandedMatrix');
+legend('Location', 'northwest');
+grid on;
+
+saveas(gcf, 'figures/1d-matrix-type-compare-time', 'epsc');
+
+end
+
 function [] = laplace_2d_banded_normal_time_iter_comparison_plot()
 
 data = load('task3.3.4.dat');
@@ -148,7 +192,7 @@ plot(n, data(:,3), 'bx'); % MMatrix iterations
 plot(n, data(:,5), 'ro'); % MBandedMatrix iterations
 
 set(findall(gcf,'-property','FontSize'),'FontSize',16);
-title('Comparison of execution time using MMatrix and MBandedMatrix classes.');
+title(sprintf('Comparison of execution time using\nMMatrix and MBandedMatrix classes.'));
 xlabel('Size of matrix');
 ylabel('Time to converge');
 legend('MMatrix', 'MBandedMatrix');
@@ -166,7 +210,7 @@ plot(n, data(:,2), 'bx'); % MMatrix timing
 plot(n, data(:,4), 'rx'); % MBandedMatrix timing
 
 set(findall(gcf,'-property','FontSize'),'FontSize',16);
-title('Comparison of execution time for 2D Poisson problem using MMatrix and MBandedMatrix classes.');
+title(sprintf('Comparison of execution time for 2D Poisson problem\nusing MMatrix and MBandedMatrix classes.'));
 xlabel('Size of matrix');
 ylabel('Time to converge');
 legend('MMatrix', 'MBandedMatrix');
@@ -194,7 +238,7 @@ plot(n1(1:k), data_matrix(1:k,3), 'bx');
 plot(n1(1:k), data_banded(1:k,3), 'rx');
 
 set(findall(gcf,'-property','FontSize'),'FontSize',16);
-title('Comparison of execution time for 1D Poisson problem using MMatrix and MBandedMatrix classes.');
+title(sprintf('Comparison of execution time for 1D Poisson problem using\nMMatrix and MBandedMatrix classes.'));
 xlabel('Size of matrix');
 ylabel('Time to converge');
 legend('MMatrix', 'MBandedMatrix');
@@ -275,11 +319,20 @@ data = load('task3.3.5.dat');
 figure();
 surf(data);
 set(findall(gcf,'-property','FontSize'),'FontSize',16);
-title('3D surface plot of the solution to the 2D Poisson problem, n=25^2.')
+title(sprintf('3D surface plot of the solution to the\n2D Poisson problem, n=25^{ 2}.'));
 xlabel('x');
 ylabel('y');
 
 saveas(gcf, 'figures/2d-surf', 'epsc');
+
+figure();
+contour(data);
+set(findall(gcf,'-property','FontSize'),'FontSize',16);
+title(sprintf('Contour plot of the solution to the\n2D Poisson problem, n=25^{ 2}.'))
+xlabel('x');
+ylabel('y');
+
+saveas(gcf, 'figures/2d-contour', 'epsc');
 
 end
 
