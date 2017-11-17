@@ -458,8 +458,8 @@ void create_timings_laplace_operator_1d(){
     double start1 = 0, end1 = 0;
     double start2 = 0, end2 = 0;
 
-    for (int k = 0; k < 15; ++k ){
-        int n = 5 * pow(2,k);
+    for (int k = 0; k < 20; ++k ){
+        int n = 5 + 50* k;
         A1 = laplacian_1d(n);
         A2 = laplacian_1d_banded(n);
         b = create_vector1(n);
