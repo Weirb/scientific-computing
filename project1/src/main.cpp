@@ -21,6 +21,9 @@ void generate_all_data() {
 		cout << "create_table_laplacian_1d_banded" << endl; 
 		create_table_laplacian_1d_banded();
 
+		cout << "create_timings_laplace_operator_1d" << endl; 
+		create_timings_laplace_operator_1d();
+
 		cout << "create_timings_laplace_operator_2d" << endl;
 		create_timings_laplace_operator_2d();
 
@@ -42,6 +45,6 @@ void generate_all_data() {
 int main(int argc, char** argv){
 
 	generate_all_data();
-
+	
 	return 0;
 }
