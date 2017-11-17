@@ -3,10 +3,6 @@
 % http://epubs.siam.org/doi/pdf/10.1137/1031003
 % http://www.sam.math.ethz.ch/~mhg/pub/biksm.pdf
 
-\begin{abstract}
-    Conjugate gradient algorithm... Laplacian operator... 
-\end{abstract}
-
 \section{Introduction}
 
 \iffalse
@@ -14,17 +10,9 @@ Interesting, cogent account of the work in this report
 > in the context of the mathematical problem considered 
 > in the scientific computing more widely
 Very well referenced.
-
-Talk about the problems we are going to discuss
-> Laplacian operator. Finite difference of the finite difference of Laplace
-> How do we get the matrix?
-> Both for 1 and 2D.
-
-Top 10 algorithms 20th century. How does it relate to wider mathematical community?
-
 \fi
 
-Krylov subspace methods solve the linear system $Ax=b$ by building information about the solution from the span of the shifted Krylov subspace 
+Krylov subspace methods solve the linear system $Ax=b$ by building information about the solution from the span of the Krylov subspace 
 \[
     \mathcal{K}_k(A, r^{(0)}) = \mathrm{span}\left( r^{(0)}, Ar^{(0)}, A^2r^{(0)}, \ldots, A^{k-1}r^{(0)} \right),
 \]
@@ -33,9 +21,7 @@ In 2000, this class of methods was listed in the top 10 algorithms whose influen
 Along with other methods, such as the steepest descent, Arnoldi, and Lanczos algorithms, the conjugate gradient method shares a highly regarded spot in mathematics.
 
 The conjgate gradient algorithm was primarily developed by Hestenes and Steifel and was part of a number of important computational innovations at the time \cite{cghist}.
-Originally, the algorithm was a direct method, and this was a cause of the algorithm's lack of initial adoption.
-% When viewed as an iterative method, the algorithm is theoretically identical to the direct method but converges in fewer iterations 
-Although, conjugate gradient can be used as both a direct and iterative solver, it is much more powerful when performed iteratively, and performs well for sparse matrices.
+Although, conjugate gradient can be used as both a direct and iterative solver, it is much more powerful when performed iteratively, and in particular performs well for sparse matrices.
 It should be noted that the method requires the matrix $A$ to be symmetric and positive definite, however modifications of the algorithm remove these constraints.
 For example, the biconjugate gradient stabilised algorithm may be used on nonsymmetric problems. 
 
@@ -44,11 +30,11 @@ The Poisson problem is the Laplace equation with nonzero right hand side, which 
 This is an elliptic PDE whose solutions are harmonic functions. 
 The equation features in electrostatics, fluid dynamics, and several other areas of physics.
 For example, in heat conduction, the equation represents the steady-state heat equation.
-The discretisation leads to a symmetric and positive definite system of linear equations, and so the conjugate gradient algorithm is an appropriate solver in this case.
 Thus the study of efficient methods for solving linear systems involving this problem are desired.
+The discretisation of the Poisson PDE leads to a symmetric and positive definite system of linear equations, and so the conjugate gradient algorithm is an appropriate solver in this case.
 
 In this project, we implement matrix and vector classes in C++ in order to implement and study the conjugate gradient algorithm.
-In this report, we discuss the mathematics of the conjugate gradient algorithm, as well as discuss the results of the application of the algorithm on different problems.
+The report discusses the mathematics of the conjugate gradient algorithm, as well as the results generated from the application of the algorithm on different problems.
 
 
 \section{Conjugate Gradient}
@@ -89,62 +75,60 @@ So by minimising $f(x)$, we will converge to the global minimum and find the sol
 % Discussion of algorithm
 Two vectors are said to be $A$-orthogonal or conjugate with respect to $A$ if $\langle u,v \rangle = u^T A v= 0$.
 
-Starting with an initial guess, $x^{0}$, the CG algorithm builds
-The method constructs mutually conjugate vectors from the residuals and finds the optimal step size along that vector to search for the solution.
-This is done by constructing the vectors using Gram-Schmidt orthogonalisation.
+Starting with an initial guess, $x^{(0)}$, the method constructs mutually conjugate vectors from the residual at each step and finds the optimal step size along that vector to search for the solution.
+Conjugate vectors are constructed using Gram-Schmidt orthogonalisation.
 At step $k$, we have a set of mutually conjugate vectors $U=\{p_0, p_1,\ldots,p_k\}$, that is, they are pairwise orthogonal with respect to the inner product $\langle u,v \rangle$.
-To create the vector $p_{k+1}$ conjugate to all the other vectors in $U$, we compute the orthogonal projection of the residual at step $k$ onto the subspace $U$.
-% This involves $v$ is created orthgonal to by projecting 
-By removing the requirement the search directions be mutually conjugate, we obtain the gradient descent algorithm.
+To create the vector $p_{k+1}$ so that it is conjugate to all of the vectors in $U$, we compute the orthogonal projection of the residual at step $k$ onto the subspace $U$.
 
-This has the benefit of exclusively searching along previously unsearched directions and for the optimal search step for the solution.
-Contrast this with steepest descent, which has the possibility of overshooting the solution.
-Thus we can expect convergence to be much more rapid when these two methods are compared.
+Using conjugate search directions has the benefit of exclusively searching along previously unsearched directions and using the optimal search step for the solution.
+Contrast this with the gradient descent algorithm, which has the possibility of overshooting the solution or taking many iterations to converge.
+By removing the requirement that the search directions be mutually conjugate and instead compute the step size using some other metric, we obtain gradient descent from the conjugate gradient algorithm.
 
-
-The main algorithm of study in this project is the conjguate gradient method for solving symmetric, positive definite linear systems iteratively.
 Following the algorithm described in the handout, and as explained in section \ref{sec:cg}, the implementation is straightforward.
 After initialisation of the variables, we begin our iteration stage. 
-Given a maximum number of iterations and a tolerance, we guarantee that iteration has a fixed endpoint.
+Given a maximum number of iterations and a tolerance, we guarantee that iteration has a fixed endpoint. 
 This will be the first of either the $L^{2}$ norm of the residual is below the tolerance of the maximum iteration count is reached.
-
 In order to avoid recomputing dot products and matix-vector products, certain variables are used for storage and reuse.
-For example, we use $r_k \cdot r_k$ twice and $A p_k$ twice. By storing these results we avoid multiple computations.
+For example, we use $r_k \cdot r_k$ twice and $A p_k$ twice. 
+By storing these results we avoid multiple computations.
 
-
-\subsection{Rate of convergence}
-
-For certain matrices, $A$, we can expect immediate convergence.
-Consider the case where the matrix $A$ is symmetric and has a single eigenvalue, $\lambda>0$.
-
+The conjugate gradient algorithm is guaranteed to converge in at most $n$ iterations, where $n$ is the dimension of the problem.
+This occurs because the condition for the search directions to be orthogonal will be broken if there are more than n search directions.
+Under certain circumstances, the CG algorithm may converge particularly fast.
+For example, given a matrix $A$ with a single eigenvalue, then the conjugate gradient algorithm converges immediately in one iteration \cite{cgpain}.
 
 
 \section{Matrix Classes}
 \label{sec:classes}
 
-The implementation of the \inline{MVector}, \inline{MMatrix}, and \inline{MBandedMatrix} classes can be found in  section \ref{sec:code} in code listings \ref{lst:mvector}, \ref{lst:mmatrix}, and \ref{lst:mbandedmatrix}, respectively.
+The implementation of the \inline{MVector}, \inline{MMatrix}, and \inline{MBandedMatrix} classes can be found in  appendix \ref{sec:code} in code listings \ref{lst:mvector}, \ref{lst:mmatrix}, and \ref{lst:mbandedmatrix}, respectively.
 
 \subsection{The \inline{MVector} class}
 
-The vector class is created distinct from the matrix class.
+The \inline{MVector} class behaves as should be expected by a mathematical vector in $\R^n$.
+This has been accomplished by overloading the C++ operators, \inline{+, -, *, /}, to give reasonable behaviour to the classes.
+This class is created distinct from the matrix class, despite their underlying structure being identical.
 Although vector and matrix objects interact with each other in the expected way, a representation of a vector $x$ as a matrix in $x\in\R^{n\times 1}$ is also possible.
 In this case, a vector $x$ could be instantiated as \inline{MMatrix x(n,1);}.
 Then the product of a vector and matrix is defined as long as the corresponding dimensions match, so it would be necessary to consider the dimensions of matrices in the necessary operations.
 By making this change, we reduce duplicate code as we can reuse the code for stream outputs, matrix-matrix multiplication, and scalar-matrix multiplication.
 Ideally, code reuse leads to fewer bugs as fewer classes and lines of code are involved in the project.
+A benefit of separating the \inline{MVector} and \inline{MMatrix} classes is to assist with readability, since without proper inspection, the size of a \inline{MMatrix} may not be apparent.
+In theory, this would help to reduce bugs in the code caused by mismatched dimensions in matrix-vector products, for instance.
+The underlying data structure for this class is a \inline{vector<double>} object.
+Accessing elements of a \inline{MVector} is identical to accessing elements of the underlying \inline{vector<double>}.
 
 \subsection{The \inline{MMatrix} class}
 
 % VECTORS AND MATRICES
-These classes behave as we would expect from the standard mathematical objects. 
-This had been completed by overloading the C++ operators, \inline{+, -, *, /}, to give reasonable behaviour to the classes.
-The underlying data structure for all of these classes is a \inline{vector<double>} object.
-Accessing elements of a \inline{MVector} is identical to accessing elements of the underlying \inline{vector<double>}.
+Like the \inline{MVector}, the \inline{MMatrix} class behaves as we would expect from a standard mathematical matrix. 
+The \inline{MMatrix} is only required to interact with a \inline{MVector} by standard matrix-vector multiplication, hence only one mathematical overload is required.
+However, the overload for the \inline{+} operator between two matrices was also implemented for testing and construction of other matrices.
+The underlying data structure for this class is a \inline{vector<double>} object.
 Accessing elements of a \inline{MMatrix} requires converting between matrix coordinates and the list coordinates of the \inline{vector}.
 In matrix coordinates, $(i,j)$ specifies the element at the $i^\mathrm{th}$ row and $j^\mathrm{th}$ column.
 To convert to list coordinates, observe that $j$ is the offset from the start of the row and $i$ specifies the number of rows down.
 If each row consists of $n$ elements, i.e. the number of columns, then we have in list coordinates, $(i,j) \mapsto i*n + j$.
-
 
 \subsection{The \inline{MBandedMatrix} class}
 
@@ -169,68 +153,138 @@ Storing only the nonzero diagonals, we would need to store $5n^2$ entries.
 From this we see for large values of $n$, this storage format is space-inefficient in certain cases and can be optimised.
 
 Alternative sparse storage methods may acheive improved storage savings in cases where bandwidth is large and consists of many zero entries.
-For example, the \textit{compressed sparse row} format involves storage of three arrays consisting of the nonzero elements of a matrix as well as index information.
+For example, the \textit{compressed sparse row} format involves storage of three arrays consisting of the nonzero elements of a matrix as well as index information \cite{csr}.
 The first array contains the nonzero elements of the matrix, while the second two arrays contain row and column index information for the entries in the first array.
 The format is compressed row, because redundant row indices are ommitted in favour of a method describing the number of elements on each row.
-This approach to storing sparse matrices is similar to that which is used by MATLAB and other linear algebra packages handling sparse matrices.
-% REFERENCE
+This approach to storing sparse matrices is similar to that which is used by MATLAB and other linear algebra packages handling sparse matrices \cite{matlabsp}.
 
 Another approach to reduce storage would be to use the properties of matrix symmetry. 
 For a symmetric matrix, the elements above and below the diagonal are identical, and so there is no need to store these elements.
 For a banded matrix, this translates to storing only one of the upper or lower bands.
 An $n\times n$ \inline{MMatrix} can be compressed to an $n \times (l+r+1)$ \inline{MBandedMatrix}.
-Exploiting symmetry, we can reduce this to storing $n \times (r+1)$ elements.
+Exploiting symmetry, we can reduce this to storing $n \times (r+1)$ elements, but cannot reduce the number of computations performed this way.
 
-
-\section{Results}
-
-\subsection{Rates of convergence}
-
+For the case of the discretised Poisson matrices, there is no need to store the matrix at all.
+A function to compute the action of the matrix $A$ on a vector will suffice for the purposes of the CG algorithm. 
+This negates the cost of storing beyond the unique elements in the matrix and certain edge cases.
+Of course, this is dependent on a highly structured matrix in general.
 
 
 \subsection{Comparison of matrix classes}
-\def\mm{\inline{MMatrix}}
-\def\mb{\inline{MBandedMatrix}}
 
-The implementation of the matrix classes \mm and \mb can be found in listings \ref{lst:mmatrix} and \ref{lst:mbandedmatrix}, respectively.
-A discussion of the implementation can be found in section \ref{sec:classes}.
-
-
-
-Firstly, we should expect that the solution generated by these classes would be the same.
-The \mb is only a reduced memory representation of the \mm, and so no additional activity should exist beyond element access and storage.
-Indeed, we find this to be the case in tests and in plots comparing the iterations to converge, such as figure \ref{fig:2d-matrix-type-compare-iter}, where the number of iterations for each problem size coincide for both classes.
+Firstly, we should expect that the solutions generated by these classes are the same.
+The \inline{MBandedMatrix} is only a reduced memory representation of the \inline{MMatrix}, and so no additional activity should exist beyond element access and storage.
+Indeed, we find this to be the case in the generated data comparing the iterations to converge, such as figure \ref{fig:2d-matrix-type-compare-iter}, where the number of iterations to converge for each problem size coincide for both classes.
 
 The only computations involving a matrix in the CG algorithm are matrix-vector products.
 A standard matrix-vector product consists of $O(n^2)$ operations.
 As a costly and frequently used operation, the implementation would benefit from any reduction of this cost.
-By using the \mm class, we will incur the full cost of a matrix-vector product.
-However, using the \mb, we can reduce the cost of matrix-vector products to $O(n)$.
-This applies in the case where $1+l+r<<n$, since if $1+l+r\approx n$, there will be no cost savings since the banded matrix will be dense.
-Since we are performing fewer computations when calculating matrix-vector products using a \mb, we would expect that the run time of the algorithm is reduced significantly.
-Figure \ref{fig:2d-matrix-type-compare-time} clearly shows the benefit of reduced computation.
-The straight lines on the log-log scale plot indicate that there is a polynomial relationship between the time The red points represent the 
+By using the \inline{MMatrix} class, we will incur the full cost of a matrix-vector product.
+However, using the \inline{MBandedMatrix}, we can reduce the cost of matrix-vector products to $O(n)$.
+This applies in the case where $1+l+r\ll n$, since if $1+l+r\approx n$, there will be no cost savings since the banded matrix will be dense.
+
+Since we are performing fewer computations when calculating matrix-vector products using a \inline{MBandedMatrix}, we would expect that the run time of the algorithm is reduced significantly.
+Figures \ref{fig:1d-matrix-compare} and \ref{fig:2d-matrix-compare} clearly shows the benefit of reduced computation.
+The points forming straight lines on the log-log scale plot indicate that there is a polynomial relationship between the size of the problem and the running time.
+The blue points represent computing the solution using a \inline{MMatrix} and he red points using a \inline{MBandedMatrix}.
+The gradient of the line formed from the red points is smaller than the gradient formed from the blue points.
+The intercept point is approximately equal for each line.
+So as the size of the problem increases, the value of the \inline{MBandedMatrix} becomes apparent for these two problems.
+
+\section{Results}
+
+\subsection{CG and the 1D Poisson problem}
+
+The Poisson problem in one dimension is
+\[
+	\frac{\partial^2 u}{\partial x^2} = f(x)
+\]
+subject to suitable boundary conditions, and in our case we take $f(x)=1$.
+In the discretisation of the Poisson PDE as described by LeVeque in \cite{finitediff}, we obtain a nonsymmetric, negative definite matrix.
+We remove the top and bottom rows accounting for the boundary conditions to make it symmetric.
+We then multiply the matrix by -1 to make it positive definite.
+This allows us to solve the problem using the conjugate gradient method and yields the following,
+\[
+T = \begin{pmatrix}
+	2 & -1 & & & & \\
+    -1 & 2 & -1 &&& \\
+    & -1 & 2 & -1 && \\
+    & & \ddots & \ddots & \ddots & \\
+    & & & -1 & 2 & -1 \\
+    & & & & -1 & 2
+\end{pmatrix},
+\qquad
+b = \frac{1}{(n+1)^2}\begin{pmatrix}
+	1 \\ \vdots \\ 1
+\end{pmatrix}.
+\]
+with $T\in\R^{n\times n}$ and $b\in\R^n$.
+
+The iteration counts and execution times using a \inline{MMatrix} and \inline{MBandedMatrix} are given in table \ref{tab:1d-matrix-compare} for several different problem sizes, $n=5,55,\ldots,955$. 
+For the largest value of $n$ shown, it takes approximately 0.5 seconds to converge using a \inline{MMatrix} and requires 477 iterations to converge.
+The number of iterations equates to approximately half the size of the problem.
+
+The solution computed using the CG algorithm to solve the 1D Poisson equation is shown in figure \ref{fig:1d-matrix-solution}.
+The two plots appear to show the same curve, however, the $x$-axis differs on each.
+On the first plot, the $x$-axis identifies the component index with the value of the solution.
+The $x$-axis on the second plot shows the unit interval, the domain on which the solution is defined.
+Note that the boundary values are not included in this vector, but would join the axis as they are both 0.
+
+\subsection{CG and the 2D Poisson problem}
+
+The Poisson problem in two dimensions is
+\[
+	\frac{\partial^2 u}{\partial x^2} + \frac{\partial^2 u}{\partial y^2} = f(x,y),
+\]
+subject to suitable boundary conditions. 
+As in the 1D case above, we take $f(x,y)=1$.
+Following the process as in the discretisation of the 1D Poisson equation as described by LeVeque in \cite{finitediff}, we obtain the matrix
+\[
+A = \begin{pmatrix}
+	T & I & & & \\
+    I & T & I && \\
+    & I & T & I & \\
+    && \ddots & \ddots & \ddots \\
+    &&& I & T
+\end{pmatrix}
+\qquad
+b = \frac{1}{(n+1)^2}\begin{pmatrix}
+	1 \\ \vdots \\ 1
+\end{pmatrix}
+\]
+where $T$ is the $n\times n$ 1D Poisson matrix and $I$ is the $n\times n$ identity matrix.
+So $A$ is $n^2\times n^2$.
+
+The iteration counts and execution times using a \inline{MMatrix} and \inline{MBandedMatrix} are given in table \ref{tab:2d-matrix-compare} for several different problem sizes, $n=25,100,\ldots,10000$. 
+The plot of the comparison between the \inline{MMatrix} and \inline{MBandedMatrix} is shown in figure \ref{fig:2d-matrix-compare}.
+Just as in the 1D case, here we see that the use of a \inline{MBandedMatrix} benefits computation time with significant time reduction.
+Consider the problem size for $n=10000$, where there is a 33 times reduction in the execution time between matrix implementations.
+
+The 3D surface plot of the solution to this equation is given in figure \ref{fig:2d-matrix-solution-surface}.
+Additionally, a contour plot of the solution was generated as seen in figure \ref{fig:2d-matrix-solution-contour}.
 
 
+\subsection{CG and a different kind of matrix}
+\label{sec:mat2}
 
-\iffalse
-\subsection{Different Matrices}
-For the matrix A dependent on m, the convergence of cg breaks in general.
-Since A is not symmetric, the conditions for convergence do not hold.
-However, for large values of m, we may still find convergence for the problem.
+The other problem used to test the conjugate gradient algorithm is the linear system whose matrix $A$ is defined by
+\[
+	A = a_{ij} = \begin{cases}
+		2(i+1)^2 + m \qquad & \text{if } i=j \\
+        -(i+1)^2 	 \qquad & \text{if } |i-j|=1
+	\end{cases}
+\]
 
-If m is large, we have "strong" diagonal dominance. 
-So we are effectively solving a diagonal system.
-b is a constant vector, so x can be approximated by 2.5/a_{ii}.
-If m is small, approximately 0, no convergence at all.
-How does this play into cg algorithm?
+The primary issue with this problem is that the matrix is nonsymmetric.
+The dependence on the parameter $m$ changes the properties of the matrix, and hence the ability for the CG algorithm to converge.
 
-We need symmetry and pos defness for convergence.
-May not have set of linearly independent eigenvectors
-So the solution will not converge
-
-
-\fi
+The solution found by solving the linear system in MATLAB is shown in figure \ref{fig:matrix2-solution} for $m=0,1,10$.
+We see as $m$ increases, the solution tends towards the $x-axis$.
+For $m=0$, there is a relatively sharp curve at approximately $x=0.1$. 
+This rapid change in values may cause issue for the conjugate gradient algorithm, and as such we may find a solution using the method when $m$ is large.
+A possible reason for this is that when more mass is concentrated along the diagonal, the matrix is positive definite.
+Whereas for small $m$, we do not have positive definiteness nor symmetry.
+And so we cannot expect CG to converge for small $m$.
 
 
 \section{Conclusion}
@@ -243,25 +297,59 @@ So the solution will not converge
 Discussion of results in context of problem
 Talk about related algorithms
 > BiCG
-> CG squared
 Preconditioning
 Parallelisation, optimisations
 Results
 \fi
 
+This project has discussed the theory of the conjugate gradient algorithm as well as its implementation applied to a set of problems.
+The implementation is valid for the problems solved, but the discussion contained several avenues for improvement. 
+For example, extending the CG algorithm to work with nonsymmetric matrices by implementing the biconjugate gradient algorithm.
+With the addition of various preconditioners, we will be able to obtain faster convergence of the standard method.
+Parallelisation is also an option to improve the run time of the algorithm.
+However this 
+There is a lot further that this algorithm can be taken in terms of scope and speed.
+
+The results show that the conjugate gradient is a viable method in solving large, sparse, symmetric linear systems.
+Even in the case of nonsymmetric problems, although we are not guaranteed convergence, under some circumstances it is possible to achieve a solution with this method.
+With the addition of the extensions, the conjugate gradient method only increases in viability as a method for solving linear systems.
+
+
 \begin{thebibliography}{9}
     
     \bibitem{top10}
-        J. Dongarra and F. Sullivan, 
-        "Guest Editors Introduction to the top 10 algorithms",
+        J. Dongarra and F. Sullivan.
+        Guest Editors Introduction to the top 10 algorithms,
         in Computing in Science \& Engineering, vol. 2, no. 1, pp. 22-23, Jan.-Feb. 2000.
         doi: 10.1109/MCISE.2000.814652
     
     \bibitem{cghist}
         Gene H. Golub and Dianne P. O’Leary,
-        "Some History of the Conjugate Gradient and Lanczos Algorithms: 1948–1976",
+        Some History of the Conjugate Gradient and Lanczos Algorithms: 1948–1976,
         SIAM Review 1989 31:1, 50-102 
         
+	\bibitem{csr}
+    	Aydin Buluç, Jeremy T. Fineman, Matteo Frigo, John R. Gilbert, and Charles E. Leiserson. 2009. 
+        Parallel sparse matrix-vector and matrix-transpose-vector multiplication using compressed sparse blocks. 
+        In Proceedings of the twenty-first annual symposium on Parallelism in algorithms and architectures (SPAA '09). ACM, New York, NY, USA, 233-244. 
+        doi: 10.1145/1583991.1584053
+        
+	\bibitem{cgpain}
+    	J.R.Shewchuck.
+        An introduction to the conjugate gradient method without the agonizing pain. (1994).
+        doi: 10.1.1.110.418
+
+	\bibitem{matlabsp}
+    	Mathworks. 2017. 
+        Create sparse matrix - MATLAB sparse - MathWorks United Kingdom. [ONLINE] 
+        Available at: http://uk.mathworks.com/help/matlab/ref/sparse.html. [Accessed 17 November 2017].
+
+	\bibitem{finitediff}
+    	LeVeque, R.
+        Finite Difference Methods for Ordinary and Partial Differential Equations. 2007.
+        Society for Industrial and Applied Mathematics.
+        doi: 10.1137/1.9780898717839
+
 \end{thebibliography}
 
 \clearpage
@@ -269,58 +357,217 @@ Results
 
 \section{Figures}
 
-\begin{figure}[h]
+% 1D POISSON SOLUTION PLOT
+\begin{figure}[ht!]
+\begin{subfigure}{\textwidth}
+	\centering
+    \includegraphics[width=0.8\textwidth]{figures/1d-matrix-sol-1-100}
+    \caption{Solution plot with $x$-axis as the element index.}
+\end{subfigure}
+\par\bigskip
+\begin{subfigure}{\textwidth}
+	\centering
+    \includegraphics[width=0.8\textwidth]{figures/1d-matrix-sol-2-100}
+    \caption{Solution plot with $x$-axis defined as $\frac{(i+1)}{(n+1)}$.}
+\end{subfigure}
+\caption{Solution plots for the 1D Poisson equation with multiple axes, $n=100$.}
+\label{fig:1d-matrix-solution}
+\end{figure}
+
+% 1D POISSON COMPARISONS
+\begin{figure}[ht!]
+\begin{subfigure}{\textwidth}
+	\centering
+    \includegraphics[width=0.9\textwidth]{figures/1d-matrix-type-compare-iter}
+    \caption{Iterations to converge for the 1D Poisson equation.}
+\end{subfigure}
+\par\bigskip
+\begin{subfigure}{\textwidth}
+	\centering
+    \includegraphics[width=0.9\textwidth]{figures/1d-matrix-type-compare-time}
+    \caption{Execution time to converge for the 1D Poisson equation.}
+\end{subfigure}
+\caption{Comparison plots of \inline{MMatrix} and \inline{MBandedMatrix} iteration counts and execution times for the 1D Poisson equation.}
+\label{fig:1d-matrix-compare}
+\end{figure}
+
+
+% 2D POISSON SOLUTION PLOT
+\begin{figure}[ht!]
+\begin{subfigure}{\textwidth}
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/2d-surf}
+  \caption{3D surface plot of the solution for the 2D Poisson equation, $n=25^2$.}
+  \label{fig:2d-matrix-solution-surface}
+\end{subfigure}
+\par\bigskip
+\begin{subfigure}{\textwidth}
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/2d-contour}
+  \caption{Contour plot of the solution for the 2D Poisson equation, $n=25^2$.}
+  \label{fig:2d-matrix-solution-contour}
+\end{subfigure}
+\caption{Solution plots for the 2D Poisson equation.}
+\end{figure}
+
+% 2D POISSON COMPARISONS
+\begin{figure}[ht!]
+\begin{subfigure}{\textwidth}
 	\centering
     \includegraphics[width=0.9\textwidth]{figures/2d-matrix-type-compare-iter.eps}
-    \caption{Figure}
+    \caption{Iterations to converge for the 2D Poisson equation.}
     \label{fig:2d-matrix-type-compare-iter}
-\end{figure}
-
-\begin{figure}[h]
+\end{subfigure}
+\par\bigskip
+\begin{subfigure}{\textwidth}
 	\centering
-    \includegraphics[width=0.9\textwidth]{figures/2d-matrix-type-compare-time.eps}
-    \caption{Figure}
+    \includegraphics[width=0.84\textwidth]{figures/2d-matrix-type-compare-time.eps}
+    \caption{Execution time to converge for the 2D Poisson equation.}
     \label{fig:2d-matrix-type-compare-time}
+\end{subfigure}
+\caption{Comparison plots of \inline{MMatrix} and \inline{MBandedMatrix} iteration counts and execution times for the 2D Poisson equation.}
+\label{fig:2d-matrix-compare}
 \end{figure}
 
 
+% Mat2 SOLUTION PLOT
+\begin{figure}[ht!]
+\begin{subfigure}{0.48\textwidth}
+	\centering
+    \includegraphics[width=\textwidth]{figures/mat2-exact-sol}
+    \caption{MATLAB computed solution for various values of $m$.}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+	\centering
+    \includegraphics[width=\textwidth]{figures/mat2-sol-1-100-10.eps}
+    \caption{Computed solution using conjugate gradient method with $n=100, m=10$.}
+\end{subfigure}
+\par\bigskip
+\begin{subfigure}{0.48\textwidth}
+	\centering
+    \includegraphics[width=\textwidth]{figures/mat2-sol-1-100-1.eps}
+    \caption{Computed solution using conjugate gradient method with $n=100, m=1$.}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+	\centering
+    \includegraphics[width=\textwidth]{figures/mat2-sol-1-100-01.eps}
+    \caption{Computed solution using conjugate gradient method with $n=100, m=0.1$.}
+\end{subfigure}
+\caption{Solutions to the problem whose matrix is defined in section \ref{sec:mat2} for different values of $m$ and problem size $n=100$.}
+\label{fig:matrix2-solution}
+\end{figure}
 
+% Mat2 COMPARISONS
+\begin{figure}[ht!]
+\begin{subfigure}{0.48\textwidth}
+	\centering
+    \includegraphics[width=\textwidth]{figures/mat2-iter-0}
+    \caption{Number of iterations to converge for different size problems, $m=10$.}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+	\centering
+    \includegraphics[width=\textwidth]{figures/mat2-iter-1}
+    \caption{Number of iterations to converge for different size problems, $m=5$.}
+\end{subfigure}
+\par\bigskip
+\begin{subfigure}{0.48\textwidth}
+	\centering
+    \includegraphics[width=\textwidth]{figures/mat2-time-0}
+    \caption{Running time for different size problems, $m=10$.}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.48\textwidth}
+	\centering
+    \includegraphics[width=\textwidth]{figures/mat2-time-1}
+    \caption{Running time for different size problems, $m=5$.}
+\end{subfigure}
+\caption{Plots for the iteration count and execution times for convergence of the conjugate gradient algorithm applied to the matrix defined in section \ref{sec:mat2}.}
+\label{fig:matrix2-compare}
+\end{figure}
+
+
+\clearpage
 \section{Tables}
 
 \bgroup
-\def\arraystretch{1.1}
+\def\arraystretch{1.3}
 \begin{table}[ht!]
-\caption{Table 1}
-\label{tab:1}
-\csvstyle{myTableStyle}{longtable=|C{1.5cm}|C{2cm}|C{2cm}|C{2cm}|C{2cm}|,
-% table head= \hline $n$ & Iteration count & Execution time \\ \hline,
-table head=\hline & \multicolumn{2}{|c|}{\bfseries MMatrix} & \multicolumn{2}{|c|}{\bfseries MBandedMatrix}\\ $n$ &  Execution time & Iteration count & Execution time & Iteration count \\ \hline,
-late after line=\\\hline, no head, separator=tab}
-\csvreader[myTableStyle]{data/task3.3.4.dat}{1=\ci, 2=\cii, 3=\ciii, 4=\civ, 5=\cv}
-{\ci & \cii & \ciii & \civ & \cv}
+  \sisetup{round-mode=places, round-precision=5}
+  \csvstyle{myTableStyle}{longtable=R{1.5cm} R{2.8cm} R{1.6cm} R{2.8cm} R{1.6cm},
+  % table head= \hline $n$ & Iteration count & Execution time \\ \hline,
+  table head={\caption{Comparison of execution times and iteration counts for the conjugate gradient applied to the 1D Poisson problem.}\label{tab:1d-matrix-compare}\\ & \multicolumn{2}{c}{\bfseries \inline{MMatrix}} & \multicolumn{2}{c}{\bfseries \inline{MBandedMatrix}}\\ $n$ &  Execution time & Iteration count & Execution time & Iteration count \\ \hline},
+  late after line=\\, no head, separator=tab}
+  \csvreader[myTableStyle]{data/1d_timings.dat}{1=\ci, 2=\cii, 3=\ciii, 4=\civ, 5=\cv}
+  {\ci & \num{\cii} & \ciii & \num{\civ} & \cv}
 \end{table}
 \egroup
 
 \bgroup
-\def\arraystretch{1.0}
+\def\arraystretch{1.3}
 \begin{table}[ht!]
-\caption{Table 1}
-\label{tab:1}
-\csvstyle{myTableStyle}{longtable=|C{1.5cm}|C{3cm}|C{3cm}|,
-table head= \hline $n$ & Iteration count & Execution time \\ \hline,
-late after line=\\\hline, no head, separator=tab}
-\csvreader[myTableStyle]{data/task3.2.4.7.dat}{1=\ci, 2=\cii, 3=\ciii}
-{\ci & \cii & \ciii}
+  \sisetup{round-mode=places, round-precision=5}
+  \csvstyle{myTableStyle}{longtable=R{1.5cm} R{2.8cm} R{1.6cm} R{2.8cm} R{1.6cm},
+  table head={\caption{Comparison of execution times and iteration counts for the conjugate gradient applied to the 2D Poisson problem.}\label{tab:2d-matrix-compare}\\ & \multicolumn{2}{c}{\bfseries MMatrix} & \multicolumn{2}{c}{\bfseries MBandedMatrix}\\ $n$ &  Execution time & Iteration count & Execution time & Iteration count \\ \hline},
+  late after line=\\, no head, separator=tab}
+  \csvreader[myTableStyle]{data/task3.3.4.dat}{1=\ci, 2=\cii, 3=\ciii, 4=\civ, 5=\cv}
+  {\ci & \num{\cii} & \ciii & \num{\civ} & \cv}
 \end{table}
 \egroup
 
 
+% Matrix2 for m=10
+\bgroup
+\def\arraystretch{1.3}
+\begin{table}[ht!]
+  \sisetup{round-mode=places, round-precision=5}
+  \csvstyle{myTableStyle}{longtable=R{1cm} R{2.4cm} R{2.8cm},
+  table head={\caption{Iteration counts and execution times for the matrix defined in \ref{sec:mat2}, $m=10$.}\label{tab:matrix2-compare-10}\\ $n$ & Iteration count & Execution time \\ \hline},
+  late after line=\\, no head, separator=tab,
+  filter equal={\cii}{10}}
+  \csvreader[myTableStyle]{data/task3.2.4.8-2.dat}{1=\ci, 2=\cii, 3=\ciii, 4=\civ}
+  {\ci & \ciii & \num{\civ}}
+\end{table}
+\egroup
 
+% Matrix2 for m=5
+\bgroup
+\def\arraystretch{1.3}
+\begin{table}[ht!]
+  \sisetup{round-mode=places, round-precision=5}
+  \csvstyle{myTableStyle}{longtable=R{1cm} R{2.4cm} R{2.8cm},
+  table head={\caption{Iteration counts and execution times for the matrix defined in \ref{sec:mat2}, $m=5$.}\label{tab:matrix2-compare-5}\\ $n$ & Iteration count & Execution time \\ \hline},
+  late after line=\\, no head, separator=tab,
+  filter equal={\cii}{5}}
+  \csvreader[myTableStyle]{data/task3.2.4.8-2.dat}{1=\ci, 2=\cii, 3=\ciii, 4=\civ}
+  {\ci & \ciii & \num{\civ}}
+\end{table}
+\egroup
+
+
+\clearpage
 \section{Code Listings}
 \label{sec:code}
 
+The full code for the project, including code to generate data and figures can be found on my Github page: 
+
+https://github.com/Weirb/scientific-computing
+
 \lstinputlisting[language=C++,caption=Filename: mvector.h. Mathematical vector implementation in C++.,label=lst:mvector]{src/mvector.h}
 
+\par\bigskip
 \lstinputlisting[language=C++,caption=Filename: mmatrix.h. Mathematical matrix implementation in C++.,label=lst:mmatrix]{src/mmatrix.h}
 
+\par\bigskip
 \lstinputlisting[language=C++,caption=Filename: mbandedmatrix.h. Banded matrix implementation in C++.,label=lst:mbandedmatrix]{src/mbandedmatrix.h}
+
+\par\bigskip
+\lstinputlisting[language=C++,caption=Filename: functions.h. Conjugate gradient algorithm and prototypes for several functions to generate different example matrices and vectors.,label=lst:cg]{src/functions.h}
+
+\par\bigskip
+\lstinputlisting[language=C++,caption=Filename: functions.cpp. Function definitions of declarations in the header functions.h.,label=lst:func]{src/functions.cpp}
+
+\par\bigskip
+\lstinputlisting[language=C++,caption=Filename: testing.h. Functions for testing implementations and generating output data.,label=lst:test]{src/testing.h}
