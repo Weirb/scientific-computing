@@ -7,6 +7,15 @@ This repository contains the files for the submissions for the Scientific Comput
 
 The conjugate gradient method is implemented in C++, along with a collection classes and helper functions.
 
+To build the project's data and figures, run the following code (requires MATLAB, g++, and make).
+Warning: memory intensive. Running this may take some time to run.
+
+```bash
+cd project1
+make
+cg.exe
+make figures
+```
 
 ## Project 2 - TBC
 
