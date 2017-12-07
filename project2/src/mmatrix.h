@@ -64,6 +64,23 @@ inline MVector operator*(const MMatrix& A, const MVector& x){
 	return v;
 }
 
+// Overload operator for MMatrix * scalar
+inline MMatrix operator*(const MMatrix& A, const double& x) {
+
+	MMatrix temp = A;
+	for (int i = 0; i < A.Rows(); ++i) {
+		for (int j = 0; j < A.Cols(); ++j) {
+			temp(i,j) *= x;
+		}
+	}
+	return temp;
+}
+
+// Overload operator for scalar * MMatrix
+inline MMatrix operator*(const double& x, const MMatrix& A) {
+	return operator*(A,x);
+}
+
 // Overload operator for MMatrix + MMatrix
 inline MMatrix operator+(const MMatrix& A, const MMatrix& B) {
 	// Ensure operation is valid 
