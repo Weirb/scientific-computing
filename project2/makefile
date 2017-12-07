@@ -10,7 +10,7 @@ FILES=main.cpp
 OBJECTS = $(addprefix $(OBJ_PATH)/, $(FILES:.cpp=.o))
 
 all: $(OBJECTS)
-	$(CC) -o $(EXECUTABLE) $(OBJECTS)
+	$(CC) -o $(EXECUTABLE) $(OBJECTS) -static-libstdc++
 
 $(OBJ_PATH)/%.o: $(SRC_PATH)/%.cpp
 	mkdir -p $(OBJ_PATH)
