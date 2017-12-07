@@ -106,4 +106,15 @@ public:
 	}
 };
 
+class BurgerElement : public AdvectionElement {
+public:
+	double flux(double u){
+		return 0.5*u*u;
+	}
+
+	double h(double a, double b){
+		return 0.5*(flux(a) + flux(b)) - std::max(a, b)*(b - a);
+	}
+};
+
 #endif
