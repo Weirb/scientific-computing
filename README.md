@@ -13,9 +13,21 @@ Warning: memory intensive. Running this may take some time to run.
 ```bash
 cd project1
 make
-cg.exe
+./cg.exe
 make figures
 ```
 
-## Project 2 - TBC
+## Project 2 - Discontinuous Galerkin Methods
+
+The discontinuous galerkin method is implemented in C++ to solve convection dominated problems.
+
+To build the project's data and figures, run the following code (requires MATLAB, g++, and make).
+Warning: memory intensive. Running this may take some time to run.
+
+```
+cd project2
+make
+./galerkin.exe
+make figures
+```
 
