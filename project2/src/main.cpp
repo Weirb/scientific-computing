@@ -174,18 +174,23 @@ void create_data_file2(AdvectionElement* e) {
 }
 
 int main(int argc, char** argv){
+	auto square_ic = [](double x) { return (0 <= x) && (x <= 1) ? 1. : 0.; };
+	auto sine_ic = [](double x) { return 1.5 + sin(x); };
 
-	AdvectionElement* b = create_burger_elements(50, 0, 2 * M_PI, [](double x) {return 1.5+sin(x); });
-	
-	b->timestep(0.1);
+	AdvectionElement *b = create_advection_elements(50, 0, 2 * M_PI, square_ic);
 
-	AdvectionElement* c = b;
-	do {
-		cout << c->interpolated_x(0) << ", " << c->interpolated_u(0) << endl;
-		c = c->Right_neighbour_pt;
-	} while (b != c);
+	create_animation_data(b);
 
+	// b->timestep(0.05);
+	// b->timestep(0.05);
+	// b->timestep(0.05);
 
-	cin.get();
+	// AdvectionElement* c = b;
+	// do {
+	// 	cout << c->interpolated_x(0) << ", " << c->interpolated_u(0) << endl;
+	// 	c = c->Right_neighbour_pt;
+	// } while (b != c);
+
+	// cin.get();
 	return 0;
 }
