@@ -55,8 +55,8 @@ public:
 		// Loop over all the elements, calculating the interplated values
 		// on each element.
         for (int i = 0; i < n_elements; ++i, elements=elements->Right_neighbour_pt){
-            data.x[i] = e->interpolated_x(s);
-            data.u[i] = e->interpolated_u(s);
+            data.x[i] = elements->interpolated_x(s);
+            data.u[i] = elements->interpolated_u(s);
         }
 
         return data;
