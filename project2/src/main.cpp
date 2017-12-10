@@ -2,10 +2,8 @@
 
 #include <iostream>
 #include <fstream>
-#include <sstream>
 #include "mvector.h"
 #include "mmatrix.h"
-#include "mbandedmatrix.h"
 #include "advection_element.h"
 #include "mesh.h"
 
