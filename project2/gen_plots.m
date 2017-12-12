@@ -1,6 +1,6 @@
 function [] = gen_plots()
 
-animate_plot();
+animate_plot_file('data2.dat');
 end
 
 function [] = plot1()
@@ -48,6 +48,23 @@ if (0<= x) && (x <= 1)
 else
     z = 0;
 end
+end
+
+function [] = animate_plot_file(filename)
+    data = load(filename);
+    [N, M] = size(data);
+    k = N;
+    y = data(1:k, :);
+    x = linspace(0,2*pi,M);
+    
+    h = plot(NaN,NaN);
+    axis([min(x) max(x) min(min(y)) max(max(y))]);
+    for i = 1:15:k
+        pause(0.1);
+        set(h, 'XData', x);
+        set(h, 'YData', y(i,:));
+        drawnow;
+    end
 end
 
 function [] = animate_plot()
