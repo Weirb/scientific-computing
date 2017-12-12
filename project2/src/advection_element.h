@@ -54,27 +54,10 @@ public:
 		// expensive function calls. Take 16 digits.
 		double one_over_sqrt3 = 0.5773502691896257;
 		return flux(interpolated_u(-one_over_sqrt3)) + flux(interpolated_u(one_over_sqrt3));
-
-		// We can also try integrating using the trap rule
-		// int N = 20;
-		// double ds = 2. / N;
-
-		// int I = U[1] + U[0];
-		// for (int i = -N/2.+1; i < N/2.; ++i){
-		// 	I += 2 * flux(interpolated_u(i * ds));
-		// }
-
-		// return I * ds / 2.;
-
-		// Or we could even use more points in Gaussian quadrature
-		double I = 0.652145*(flux(interpolated_u(0.339981)) + flux(interpolated_u(-0.339981)));
-		I += 0.347855*(flux(interpolated_u(0.861136)) + flux(interpolated_u(-0.861136)));
-		return I;
 	}
 
 	virtual double h(double a, double b) {
-		return 0.5 * (flux(a) + flux(b));
-		// return flux(a);
+		return flux(a);
 	}
 };
 
@@ -85,7 +68,7 @@ public:
 	}
 
 	double h(double a, double b){
-		return 0.5*(flux(a) + flux(b)) - std::max(a, b)*(b - a);
+		return 0.5*(flux(a) + flux(b)) - 0.5*abs(std::max(a, b))*(b - a);
 	}
 };
 
