@@ -1,7 +1,7 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include "advection_element.h"
+#include "element.h"
 #include "mvector.h"
 #include "mmatrix.h"
 
@@ -25,7 +25,7 @@ of variables for the numerical method.
 By templating the class, we can have a mesh for any kind of
 element that we like. 
 In our case, this gives us a single mesh for AdvectionElement
-and BurgerElement.
+and BurgersElement.
 */
 template<class Element>
 class Mesh {
