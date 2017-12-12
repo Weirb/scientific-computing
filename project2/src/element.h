@@ -71,12 +71,12 @@ public:
 };
 
 /*
-BurgerElement inherits from AdvectionElement.
+BurgersElement inherits from AdvectionElement.
 Both classes have identical functionality, but
-BurgerElement overrides the flux and numerical
+BurgersElement overrides the flux and numerical
 flux functions for its own calculations.
 */
-class BurgerElement : public AdvectionElement {
+class BurgersElement : public AdvectionElement {
 public:
 	// Flux function for Burgers' equation.
 	double flux(double u){
