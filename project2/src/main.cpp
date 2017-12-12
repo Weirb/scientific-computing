@@ -57,9 +57,25 @@ int main(int argc, char** argv){
 	auto square_ic = [](double x) { return (0 <= x) && (x <= 1) ? 1. : 0.; };
 	auto sine_ic = [](double x) { return 1.5 + sin(x); };
 
-	Mesh<AdvectionElement> mesh(50, 0, 2*M_PI, sine_ic);
+	int N = 200;
+	double dx = 2 * M_PI / (double)N;
+	// double dt = 1e-4;
+	double dt = dx / 16;
 
-	create_animation_data(mesh, 0.1, 5, "data.dat");
+	double T = 4;
+	int iteration_count = T / dt;
+
+	Mesh<AdvectionElement> mesh1(N, 0, 2*M_PI, sine_ic);
+	Mesh<BurgerElement> mesh2(N, 0, 2*M_PI, sine_ic);
+
+	// Mesh<AdvectionElement> mesh2(10, 0, 2*M_PI, sine_ic);
+	// MeshData data = mesh2.get_mesh_data(0);
+	// for (int i = 0; i < 10; ++i){
+	// 	cout << data.x[i] << ", " << data.u[i] << endl;
+	// }
+
+	create_animation_data(mesh1, dt, iteration_count, "data1.dat");
+	create_animation_data(mesh2, dt, iteration_count, "data2.dat");
 
 	return 0;
 }
