@@ -5,6 +5,13 @@
 
 using namespace std;
 
+/*
+AdvectionElement handles data storage for the elements
+of a finite element mesh. Elements are connected by 
+neighbours through their pointers, and contain data on
+the position on the domain as well as the value of the
+solution on the boundary elements.
+*/
 class AdvectionElement {
 public:
 	// Pointer to the left neighbour
@@ -41,7 +48,7 @@ public:
 		return U[0] * 0.5*(1 - s) + U[1] * 0.5*(1 + s);
 	}
 
-	// Calculate the flux
+	// Calculate the flux for advection equation
 	virtual double flux(double u) {
 		return u;
 	}
@@ -56,17 +63,28 @@ public:
 		return flux(interpolated_u(-one_over_sqrt3)) + flux(interpolated_u(one_over_sqrt3));
 	}
 
+	// Numerical flux function for advection equation.
+	// Uses LLF flux to approximate the flux numerically.
 	virtual double h(double a, double b) {
 		return flux(a);
 	}
 };
 
+/*
+BurgerElement inherits from AdvectionElement.
+Both classes have identical functionality, but
+BurgerElement overrides the flux and numerical
+flux functions for its own calculations.
+*/
 class BurgerElement : public AdvectionElement {
 public:
+	// Flux function for Burgers' equation.
 	double flux(double u){
 		return 0.5*u*u;
 	}
 
+	// Numerical flux function for Burgers' equation.
+	// Uses LLF flux to approximate the flux numerically.
 	double h(double a, double b){
 		return 0.5*(flux(a) + flux(b)) - 0.5*abs(std::max(a, b))*(b - a);
 	}
