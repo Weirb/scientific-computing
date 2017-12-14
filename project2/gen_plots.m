@@ -23,6 +23,7 @@ function [] = plot_burgers_square(filename, t)
     xlabel('x');
     ylabel('u(x,t)');
     legend('Exact solution', 'Approximate solution');
+    legend('Location', 'best');
     axis([ 0 2*pi -0.2 1.4]);
     set(findall(gcf,'-property','FontSize'),'FontSize',20);
     set(gcf, 'Units', 'Inches', 'Position', [0, 0, 9, 6]);
@@ -44,6 +45,7 @@ function [] = plot_burgers_sine(filename, t)
     xlabel('x');
     ylabel('u(x,t)');
     legend('Exact solution', 'Approximate solution');
+    legend('Location', 'best');
     axis([ 0 2*pi 0 3]);
     set(findall(gcf,'-property','FontSize'),'FontSize',20);
     set(gcf, 'Units', 'Inches', 'Position', [0, 0, 9, 6]);
@@ -77,6 +79,7 @@ function [] = plot_advection_square(filename, t)
     xlabel('x');
     ylabel('u(x,t)');
     legend('Exact solution', 'Approximate solution');
+    legend('Location', 'best');
     axis([ 0 2*pi -0.2 1.4]);
     set(findall(gcf,'-property','FontSize'),'FontSize',20);
     set(gcf, 'Units', 'Inches', 'Position', [0, 0, 9, 6]);
@@ -98,6 +101,7 @@ function [] = plot_advection_sine(filename, t)
     xlabel('x');
     ylabel('u(x,t)');
     legend('Exact solution', 'Approximate solution');
+    legend('Location', 'best');
     axis([ 0 2*pi 0 3]);
     set(findall(gcf,'-property','FontSize'),'FontSize',20);
     set(gcf, 'Units', 'Inches', 'Position', [0, 0, 9, 6]);
