@@ -1,19 +1,6 @@
 function [] = gen_plots()
 
-
-hold on;
-data = load('data/burgers_sin_t_1.dat');
-plot(data(:,1),data(:,2), 'ko', 'markers',8);
-
-x = linspace(0,2*pi,1000); 
-
-t=0.5; 
-u=(2*sinh(x))./(cosh(x)-exp(-t)); 
-plot(x,u,'--'); 
-% for t=0.2:0.5:1.2 
-%     u=(-2*sinh(x))./(cosh(x)-exp(-t)); 
-%     plot(x,u); 
-% end
+plot_burgers_all();
 
 end
 
@@ -21,16 +8,38 @@ function [x] = square(x)
 x = (0 <= x).*(x <= 1);
 end
 
+function [] = plot_burgers_square(filename, t)
+    figure();
+    hold on;
+    grid on;
+    
+    F = @(x,u) square(x-u*t) - u;
+    fimplicit(F, [0 2*pi],'-', 'LineWidth',2,'Color',[1,0.4,0],'MeshDensity',2000);
+    
+    data = load(filename);
+%     plot(data(:,1),data(:,2), 'ko--', 'markers',8,'LineWidth',1);
+    plot(data(:,1),data(:,2), 'ko', 'markers',8,'LineWidth',1);
+    
+    xlabel('x');
+    ylabel('u(x,t)');
+    legend('Exact solution', 'Approximate solution');
+    axis([ 0 2*pi -0.2 1.4]);
+    set(findall(gcf,'-property','FontSize'),'FontSize',20);
+    set(gcf, 'Units', 'Inches', 'Position', [0, 0, 9, 6]);
+    [~,name,~] = fileparts(filename);
+    saveas(gcf, sprintf('figures/%s', name), 'epsc');
+end
+
 function [] = plot_burgers_sine(filename, t)
     figure();
     hold on;
     grid on;
     
-%     x = linspace(0,2*pi,1000);
-%     plot(x,1.5+sin(x-t),'-', 'LineWidth',2,'Color',[1,0.4,0]);
+    F = @(x,u) 1.5 + sin(x-u*t) - u;
+    fimplicit(F, [0 2*pi],'-', 'LineWidth',2,'Color',[1,0.4,0]);
     
     data = load(filename);
-    plot(data(:,1),data(:,2), 'ko', 'markers',8);
+    plot(data(:,1),data(:,2), 'ko', 'markers',8,'LineWidth',1);
     
     xlabel('x');
     ylabel('u(x,t)');
@@ -39,7 +48,19 @@ function [] = plot_burgers_sine(filename, t)
     set(findall(gcf,'-property','FontSize'),'FontSize',20);
     set(gcf, 'Units', 'Inches', 'Position', [0, 0, 9, 6]);
     [~,name,~] = fileparts(filename);
-%     saveas(gcf, sprintf('figures/%s', name), 'epsc');
+    saveas(gcf, sprintf('figures/%s', name), 'epsc');
+end
+
+function [] = plot_burgers_all()
+
+T = [0., 0.25, 0.5, 1., 1.25, 1.5, 1.75, 2.];
+for i=1:numel(T)
+    filename = sprintf('data/burgers_sin_t_%d.dat', i-1);
+    plot_burgers_sine(filename, T(i));
+
+    filename = sprintf('data/burgers_sq_t_%d.dat', i-1);
+    plot_burgers_square(filename, T(i));
+end
 end
 
 function [] = plot_advection_square(filename, t)
@@ -51,7 +72,7 @@ function [] = plot_advection_square(filename, t)
     plot(x,square(x-t),'-', 'LineWidth',2,'Color',[1,0.4,0]);
     
     data = load(filename);
-    plot(data(:,1),data(:,2), 'ko', 'markers',8);
+    plot(data(:,1),data(:,2), 'ko', 'markers',8,'LineWidth',1);
     
     xlabel('x');
     ylabel('u(x,t)');
@@ -72,7 +93,7 @@ function [] = plot_advection_sine(filename, t)
     plot(x,1.5+sin(x-t),'-', 'LineWidth',2,'Color',[1,0.4,0]);
     
     data = load(filename);
-    plot(data(:,1),data(:,2), 'ko', 'markers',8);
+    plot(data(:,1),data(:,2), 'ko', 'markers',8,'LineWidth',1);
     
     xlabel('x');
     ylabel('u(x,t)');
@@ -85,17 +106,15 @@ function [] = plot_advection_sine(filename, t)
 end
 
 function [] = plot_advection_all()
-% SINE WAVES
-plot_advection_sine('data/advec_sin_t_0.dat', 0);
-plot_advection_sine('data/advec_sin_t_1.dat', 0.25);
-plot_advection_sine('data/advec_sin_t_2.dat', 0.5);
-plot_advection_sine('data/advec_sin_t_3.dat', 1);
 
-% SQUARE WAVES
-plot_advection_square('data/advec_sq_t_0.dat', 0);
-plot_advection_square('data/advec_sq_t_1.dat', 0.25);
-plot_advection_square('data/advec_sq_t_2.dat', 0.5);
-plot_advection_square('data/advec_sq_t_3.dat', 1);
+T = [0., 0.25, 0.5, 1.];
+for i=1:numel(T)
+    filename = sprintf('data/advec_sin_t_%d.dat', i-1);
+    plot_advection_sine(filename, T(i));
+    
+    filename = sprintf('data/advec_sq_t_%d.dat', i-1);
+    plot_advection_square(filename, T(i));
+end
 end
 
 
