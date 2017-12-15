@@ -1,0 +1,453 @@
+\section{Introduction}
+
+Consider the one-dimensional hyperbolic partial differential equation, with an initial condition and subject to periodic boundary conditions,
+\begin{align}
+	\frac{\partial u}{\partial t} + \frac{\partial f(u)}{\partial x} = 0, \qquad 
+    \begin{array}{ll}
+		u(x,t=0)=u_0(x), \quad 0 \leq x \leq 2\pi\\ 
+        u(x=0,t)=u(x=2\pi,t), \quad t \geq 0, 
+	\end{array}\label{eq:problem}
+\end{align}
+where the variable $t$ is time, $x$ is the spatial variable, and $f(u)$ is the flux.
+The above equation is known as a scalar conservation law, where the unknown $u(x,t)$ is a conserved quantity.
+In general, such an equation represents the propagation of information along the $x$ domain in time.
+The transport equation can be found in meteorology, chemistry, and in the study of traffic flow problems, as well in several other areas of the sciences.
+Hence, the need for efficient solvers for this class of equation are relevant and important in modelling physical problems.
+
+The first Galerkin method was described by Reed and Hill in 1973 \cite{Reed_Hill_1973}.
+Their paper described solving the neutron transport equation on a triangular mesh, allowing the angular flux to be discontinuous across the boundary of the triangular elements. 
+The paper went on to show that allowing the flux function to be discontinuous across improves numerical accuracy and stability.
+
+Galerkin methods are a form of finite element method, as both involve formulating the problem using the weak form of the derivative and finding the projection of the solution on to a space of test functions.
+Different from the continuous formulation, in a discontinuous formulation of a Galerkin method we allow unequal values of the solution at the boundaries of elements.
+Because of this, we must introduce some numerical method for bridging the gap in the solution between the two elements.
+The discontinuous Galerkin method is useful when modelling shockwaves, which are inherently discontinuous because of instantaneous increases in the solution.
+Since the derivative is not defined at discontinuities, care is needed in order to obtain reasonable properties of the numerical solution.
+By a choice of initial condition, we will discuss how to handle the solution numerically. 
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Discontinuous Galerkin Methods}
+
+In order to derive the discontinuous Galerkin (DG) method, we introduce the notion of a weak derivative and the weak form of a differential equation.
+The weak form of \eqref{eq:problem} is obtained via multiplication by a test function $v(x) \in C^\infty$ and integrating over the problem interval.
+\[
+	\int_0^{2\pi} \left( \frac{\partial u}{\partial t} + \frac{\partial f(u)}{\partial x} \right) v(x) \mathrm{d} x = 0. \label{eq:weak}
+\]
+Any solution of the \ref{eq:problem} is also a solution of the weak form \cite{leveque1992numerical}.
+
+The problem domain is split into $N$ elements of equal width.
+On each element, we require some method of interpolating the spatial and solution variables on the element boundary.
+In our case, this is achieved using the degree 1 Lagrange basis, that uses two distinct points to construct the interpolating polynomials.
+Mapping the element to the interval $[-1,1]$ and parametrising in terms of $s$, we obtain the interpolating polynomial for the solution on the element as
+\[
+	u^e = u_0^e \frac{1-s}{2} + u_1^e \frac{1+s}{2} = u_0^e \psi_0(s) + u_1^e \psi_1(s),
+\]
+and similarly for $x$.
+
+Now considering the integral on each element, we make use of integration by parts to expand \eqref{eq:weak},
+\[
+	\int_{x_0^e}^{x_1^e} \left( \frac{\partial u}{\partial t} v - f(u) \frac{\partial v}{\partial x} \right) \mathrm{d} x +f(u_1^e)v(x_1^e)-f(u_0^e)v(x_0^e) = 0.
+\]
+We require some numerical flux function since the value of the solution between neighbouring elements need not be equal.
+For this implementation, we use the local Lax-Friedrichs flux, defined as
+\[
+	h(a,b) = \frac{1}{2} \left( f(a) + f(b) \right) - \frac{1}{2}\max_{a\leq \xi \leq b} \lvert f'(\xi) \rvert \left( b - a \right).
+\]
+With the numerical flux, our equation becomes,
+\begin{align*}
+	\int_{x_0^e}^{x_1^e} \left( \frac{\partial u}{\partial t} v - f(u) \frac{\partial v}{\partial x} \right) \mathrm{d} x +h(u_0^{e+1},u_1^e)v(x_1^e)-h(u_0^e, u_1^{e-1})v(x_0^e) = 0.
+\end{align*}
+The test functions are exactly the basis polynomials, $\psi_0, \psi_1$. This yields two equations in our two discrete values of the unknown variable on each element. And since the basis polynomials are functions of $x$ only, they are independent of time, so
+\begin{align*}
+	\int_{x_0^e}^{x_1^e}  \dot{u}_0^e \psi_0\psi_0 + \dot{u}_1^e \psi_1\psi_0 \mathrm{d} x 
+    &= \int_{x_0^e}^{x_1^e} f(u) \frac{\partial \psi_0}{\partial x} \mathrm{d} x + h(u_1^{e-1}, u_0^e) \\
+    \int_{x_0^e}^{x_1^e}  \dot{u}_0^e \psi_0\psi_1 + \dot{u}_1^e \psi_1\psi_1 \mathrm{d} x 
+    &= \int_{x_0^e}^{x_1^e} f(u) \frac{\partial \psi_0}{\partial x} \mathrm{d} x - h(u_1^e, u_0^{e+1}).
+\end{align*}
+
+After splitting the equation into elements and simplifying the integral form, we finally discretise the time domain which leads to a fully discretised system of hyperbolic equations on each element that can be solved using iteration.
+% The final form of the equations leads us to
+
+With appropriate numerical methods for computing integrals numerically, this method is ready to be implemented and tested.
+
+% \subsection{Stability and convergence}
+
+% Lax-Richtmyer equivalence theorem
+
+% The Courant-Friedrichs-Lewy condition gives a necessary condition 
+
+
+
+
+\subsection{Implementation}
+\iffalse
+We can choose different basis functions
+Different resolutions 
+Variable element widths (adaptive mesh refinement) http://www.sciencedirect.com/science/article/pii/0168927494900299
+Different time and space discretisations
+Solve the problem for higher dimensions
+Different numerical flux functions
+Try using implicit scheme to improve stability
+\fi
+
+In order to solve our equation numerically, we collect elements together in a \inline{Mesh} object, and represent each element as an object (\inline{AdvectionElement} or \inline{BurgerElement}) in the mesh.
+The element contains data on the position in the spatial domain, the value of the solution at the position of the element, and the neighbouring elements.
+Element connectivity is set up as a circular doubly linked list, where the neighbouring elements are connected to each other by pointers facing each way, as well as the first and last elements connecting to each other to handle the periodic boundary condition.
+Initialisation of the method is performed by creation of the mesh with the desired properties.
+The solution at a given time is calculated by iterated timestepping on the mesh.
+Given a resolution \inline{dt}$\,=\Delta t$, looping $N$ times performing \inline{timestep(dt)} at each iteration, will compute the solution at $T=N\Delta t$.
+
+
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Results}
+\subsection{Advection equation}
+
+In the case of the advection equation, the flux funcion is $f(u)=Cu$, where $C$ is the wave speed of the solution.
+For simplicity, we will only consider the case where $C=1$.
+Our differential equation then becomes
+\[
+	\frac{\partial u}{\partial t} + \frac{\partial u}{\partial x} = 0,
+\]
+subject to the same initial and boundary conditions as in \eqref{eq:problem}.
+The exact solution of this PDE is a shifted copy of the initial condition.
+If $u(x,t=0)=u_0(x)$, then the solution is
+\[
+	u(x,t) = u_0(x-t), \qquad t \geq 0.
+\]
+
+To solve the advection equation for the following two cases, we choose $N=100$ points on the domain, giving a mesh size of 
+\[
+\Delta x = \frac{2\pi}{100} \approx 0.0628.
+\]
+The time resolution chosen is $\Delta t = 10^{-4}$, giving a Courant number of
+\[
+	C = \frac{\Delta t}{\Delta x} \approx 0.00159 \leq 1
+\]
+This ensures the necessary condition of the CFL condition for stability of the method \cite{leveque1992numerical}.
+
+\subsubsection{Sine wave initial condition}
+\label{sec:advecsine}
+The first of our initial conditions of study is a sine wave, displaced along the y-axis by 1.5.
+This is defined as
+\begin{align}
+	u(x,t=0) = 1.5+\sin(x). \label{eq:sine}
+\end{align}
+As such, the exact solution of the advection equation is given by $u(x,t)=1.5+\sin(x-t)$.
+The DG numerical scheme applied to equation \eqref{eq:problem} and initial condition \eqref{eq:sine} gives us results exactly in line with what we expect from the exact solution.
+Figures \ref{fig:advec_sin_t_0}, \ref{fig:advec_sin_t_1}, \ref{fig:advec_sin_t_2}, and \ref{fig:advec_sin_t_3} show the exact and approximate solution for $t=0, 0.25, 0.5, 1$.
+We can see that the computed solution overlaps the exact solution at every point along the curve.
+
+Inspecting the graph more closely, we can see a bunching of the computed points around the peaks and troughs of the solution.
+The cause of this is a rapidly changing derivative around the turning points of the graph.
+This suggests that unnecessary extra work is performed in calculating the numerical solution.
+Although not an issue in this case, we will discuss shortly that introducing refinements of the mesh may provide benefits in computing solutions whose behaviour is not smooth.
+
+\subsubsection{Square wave initial condition}
+
+We now change the initial condition to be the square wave function, defined as
+\begin{align}
+	u(x,t=0) = \begin{cases}
+		1 & \text{if}\quad 0 \leq x \leq 1 \\
+        0 & \text{otherwise}
+	\end{cases}. \label{eq:square}
+\end{align}
+There is a jump discontinuity at $x=1$, hence the initial condition is discontinuous.
+The exact solution to our problem is the shifted square wave,
+\[
+u(x,t) = \begin{cases}
+		1 & \text{if}\quad 0 \leq x-t \leq 1 \\
+        0 & \text{otherwise}
+	\end{cases}, \qquad t \geq 0.
+\]
+We can see in figures \ref{fig:advec_sq_t_0}, \ref{fig:advec_sq_t_1}, \ref{fig:advec_sq_t_2}, and \ref{fig:advec_sq_t_3}, which show the exact and approximate solution for $t=0, 0.25, 0.5, 1$, that the solution does not behave as we would expect.
+At $t=0$, a single point lies on the discontinuity at the midpoint between the high and low values of the solution.
+All other points for this value of $t$ appear to behave as we would expect.
+Timestepping to $t=0.25$, we see that more points now lie on the points of discontinuity.
+In addition, the exact solution is over and underestimated at these points.
+This is not what we expect to see, as the exact solution is point-wise smooth away from the two points of discontinuity.
+Increasing again to $t=0.5$ and $t=1$, we can see that the errors in the approximate solution at the points of discontinuity grow slowly, but the behaviour does not appear to change otherwise.
+
+In order to deal with the discontinuity, some form of mesh refinement might be appropriate.
+Specifically, increasing the number of points around the point of discontinuity may help to approximate the solution better there.
+Additionally, increasing the order of the polynomial basis functions of the mesh could allow the discontinuity to be handled.
+Choosing a quadratic or higher order basis, instead of the linear polynomials used for this implementation, would allow the polynomial to handle the sharp change in values around the discontinuity more easily. 
+
+
+\subsection{Inviscid Burgers' equation}
+
+The general form of Burgers' equation is a dissipative system and includes a second derivative of the solution with respect to the spatial variable.
+This is known as the viscous Burgers' equation.
+Dropping the higher order term by letting the diffusion coefficient be 0, we obtain the inviscid Burgers' equation,
+\[
+	\frac{\partial u}{\partial t} + u\frac{\partial u}{\partial x} = 0.
+\]
+For given initial and boundary data, this equation takes the form of equation \eqref{eq:problem}, where the flux function is $f(u)= \frac{1}{2}u^2$. 
+In contrast to the advection equation, Burgers' equation is quasilinear, because a product of order 1 terms in the unknowns appears in the equation.
+
+If $u(x,t=0)=u_0(x)$, then the exact solution as described in \cite{salih2015inviscid} is
+\[
+	u(x,t) = u_0(x-u t), \qquad t \geq 0. \label{eq:burgerssol}
+\]
+The solution of this PDE features a ``skewed procession'' of the initial condition.
+That is, the function has certain points fixed while other points are shifted.
+This causes the solution to appear to bend on itself, and hence develop discontinuities in the solution once there is a vertical line in the solution.
+The physical interpretation of this phenomenon is the development of a shock wave in the solution.
+For the case in fluid mechanics, this could represent a sudden change in the material properties of the medium in which a body is travelling.
+
+The difficulty in solving Burgers' equation numerically is the development of discontinuities in the solution.
+Unlike in section \ref{sec:advecsine}, where a smooth initial condition results in a smooth solution, Burgers' equation will result in a discontinuous solution regardless of the smoothness of the initial condition.
+
+The same grid and time resolutions were chosen in solving Burgers' equation as in solving the advection equation.
+
+
+\subsubsection{Sine wave initial condition}
+
+Examining Burgers' equation using the initial condition \eqref{eq:sine}, we see that the exact solution is
+\[
+	u(x,t) = 1.5 + \sin(x-ut), \qquad t\geq 0,
+\]
+which is a nonlinear, implicit function involving $u,x,t$.
+Figures \ref{fig:burgers_sin_t_0}-\ref{fig:burgers_sin_t_3} show the exact solution plotted with the numerical result of the solution computed with the DG method for various $t\in \left[0,2\right]$.
+We see initially that the numerical solution coincides with the exact solution.
+In the plot for $t=1$, as the discontinuity builds up, the number of points approximating 
+However, ultimately with the development of discontinuity in the solution, the numerical method struggles to match the exact solution.
+
+At the point of discontinuity, the computed solution overestimates the exact solution before a sharp decay with an underestimate. The approximate and exact solutions then appear to coincide again.
+The over and underestimation of the exact solution occurred in solving the advection equation with the square wave initial condition.
+The discontinuities here can be handled in the same way as with the discontinuities in the advection equation.
+Increasing the order of the basis polynomials will allow the rapid change in value to be modelled, and by mesh refinement, more work can be carried out around points of rapid change.
+
+\iffalse
+In order to deal with the discontinuity, some form of mesh refinement might be appropriate.
+Specifically, increasing the number of points around the point of discontinuity may help to approximate the solution better there.
+Additionally, increasing the order of the polynomial basis functions of the mesh could allow the discontinuity to be handled.
+Choosing a quadratic or higher order basis, instead of the linear polynomials used for this implementation, would allow the polynomial to handle the sharp change in values around the discontinuity more easily. 
+\fi
+
+\subsubsection{Square wave initial condition}
+
+For the initial condition \eqref{eq:square}, the exact solution of Burgers' equation is
+\[
+u(x,t) = \begin{cases}
+		1 & \text{if}\quad 0 \leq x-ut \leq 1 \\
+        0 & \text{otherwise}
+	\end{cases}, \qquad t \geq 0.
+\]
+The discontinuity in the initial condition is apparent immediately and so the solution is discontinuous at $t=0$.
+Figures \ref{fig:burgers_sq_t_0}-\ref{fig:burgers_sq_t_3} show the exact solution plotted with the numerical result of the solution computed with the DG method for various $t\in \left[0,2\right]$.
+Contrasting to the continuous initial condition above, the points that remain fixed are all along the x-axis.
+The exact solution shears to the right along $u(x,t)=1$, while the line $u(x,t)=0$ remains fixed.
+The approximate solution at $t=1.5$ and $t=2$ has no plateau along $u(x,t)=1$.
+The numerical result gradually increases then drops down to 0 when $x=t$.
+Therefore, the exact and approximate solutions are different, where the DG method has not yielded an accurate result.
+
+There are similarities between the development of discontinuities in the sine and square wave initial conditions in Burgers' equation.
+As $t$ increases to some critical point, the numerical solution ceases to adhere to the exact solution.
+This is exactly when the graph of the exact solution exhibits a vertical line, or equivalently, when the derivative of the solution with respect to the spatial variable is infinite.
+This indicates that the exact solution also does not exist, and another regime dominates the behaviour of the system.
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion}
+
+The discontinuous Galerkin method presented here is a powerful tool in solving PDEs numerically.
+Under relatively modest conditions, we obtain stability and convergence of the method.
+By altering the properties of the method itself, such as the order of the basis polynomials, dealing with pathological features of solutions can be painless.
+Implementing adaptive refinement can also help to remedy the issues arising from discontinuous solutions.
+
+The problems studied are of importance in active research, so developing numerical methods to model and predict behaviour is invaluable.
+The results show that the DG method applied to these problems is a viable method of finding numerical solutions.
+In particular, implementing the improvements discussed, the DG method can be extended to overcome any difficulties that were saw in the numerical results.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bibliography{bibliography}{}
+\bibliographystyle{plain}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\appendix
+
+\section{Figures}
+
+\newcommand{\labelplotone}[3]{Plot of the numerical and exact solutions of the advection equation with the sine wave initial condition defined in equation \eqref{eq:sine}, at time $t=#1$, with $N=#2$ grid points, using a time step of $\Delta t =$#3.}
+
+% ADVECTION ELEMENT PLOTS
+
+% SINE WAVE INITIAL CONDITION
+\begin{figure}[ht!]
+	\centering
+    \includegraphics[width=0.7\textwidth]{figures/advec_sin_t_0}
+    \caption{\labelplotone{0}{100}{$10^{-4}$}}
+    \label{fig:advec_sin_t_0}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+    \includegraphics[width=0.7\textwidth]{figures/advec_sin_t_1}
+    \caption{\labelplotone{0.25}{100}{$10^{-4}$}}
+    \label{fig:advec_sin_t_1}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+    \includegraphics[width=0.7\textwidth]{figures/advec_sin_t_2}
+    \caption{\labelplotone{0.5}{100}{$10^{-4}$}}
+    \label{fig:advec_sin_t_2}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+    \includegraphics[width=0.7\textwidth]{figures/advec_sin_t_3}
+    \caption{\labelplotone{1}{100}{$10^{-4}$}}
+    \label{fig:advec_sin_t_3}
+\end{figure}
+
+
+% SQUARE WAVE INITIAL CONDITION
+\newcommand{\labelplottwo}[3]{Plot of the numerical and exact solutions of the advection equation with square wave initial condition defined in equation \eqref{eq:square}, at time $t=#1$, with $N=#2$ grid points, using a time step of $\Delta t =$#3.}
+
+\begin{figure}[ht!]
+	\centering
+    \includegraphics[width=0.7\textwidth]{figures/advec_sq_t_0}
+    \caption{\labelplottwo{0}{100}{$10^{-4}$}}
+    \label{fig:advec_sq_t_0}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+    \includegraphics[width=0.7\textwidth]{figures/advec_sq_t_1}
+    \caption{\labelplottwo{0.25}{100}{$10^{-4}$}}
+    \label{fig:advec_sq_t_1}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+    \includegraphics[width=0.7\textwidth]{figures/advec_sq_t_2}
+    \caption{\labelplottwo{0.5}{100}{$10^{-4}$}}
+    \label{fig:advec_sq_t_2}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+    \includegraphics[width=0.7\textwidth]{figures/advec_sq_t_3}
+    \caption{\labelplottwo{1}{100}{$10^{-4}$}}
+    \label{fig:advec_sq_t_3}
+\end{figure}
+
+% BURGERS ELEMENT PLOTS
+
+% \iffalse
+% SINE WAVE INITIAL CONDITION
+% 0., 0.25, 0.5, 1., 1.25, 1.5, 1.75, 2.
+\newcommand{\labelplotthree}[3]{Plot of the numerical and exact solutions of Burgers' equation with the sine wave initial condition defined in equation \eqref{eq:sine}, at time $t=#1$, with $N=#2$ grid points, using a time step of $\Delta t =$#3.}
+\begin{figure}[ht!]
+	\centering
+    \includegraphics[width=0.7\textwidth]{figures/burgers_sin_t_1}
+    \caption{\labelplotthree{0.25}{100}{$10^{-4}$}}
+    \label{fig:burgers_sin_t_0}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+    \includegraphics[width=0.7\textwidth]{figures/burgers_sin_t_3}
+    \caption{\labelplotthree{1}{100}{$10^{-4}$}}
+    \label{fig:burgers_sin_t_1}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+    \includegraphics[width=0.7\textwidth]{figures/burgers_sin_t_4}
+    \caption{\labelplotthree{1.25}{100}{$10^{-4}$}}
+    \label{fig:burgers_sin_t_2}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+    \includegraphics[width=0.7\textwidth]{figures/burgers_sin_t_5}
+    \caption{\labelplotthree{1.5}{100}{$10^{-4}$}}
+    \label{fig:burgers_sin_t_3}
+\end{figure}
+
+
+% SQUARE WAVE INITIAL CONDITION
+\newcommand{\labelplotfour}[3]{Plot of the numerical and exact solutions of Burgers' equation with square wave initial condition defined in equation \eqref{eq:square}, at time $t=#1$, with $N=#2$ grid points, using a time step of $\Delta t =$#3.}
+
+\begin{figure}[ht!]
+	\centering
+    \includegraphics[width=0.7\textwidth]{figures/burgers_sq_t_0}
+    \caption{\labelplotfour{0}{100}{$10^{-4}$}}
+    \label{fig:burgers_sq_t_0}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+    \includegraphics[width=0.7\textwidth]{figures/burgers_sq_t_3}
+    \caption{\labelplotfour{1}{100}{$10^{-4}$}}
+    \label{fig:burgers_sq_t_1}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+    \includegraphics[width=0.7\textwidth]{figures/burgers_sq_t_5}
+    \caption{\labelplotfour{1.5}{100}{$10^{-4}$}}
+    \label{fig:burgers_sq_t_2}
+\end{figure}
+
+\begin{figure}[ht!]
+	\centering
+    \includegraphics[width=0.7\textwidth]{figures/burgers_sq_t_7}
+    \caption{\labelplotfour{2}{100}{$10^{-4}$}}
+    \label{fig:burgers_sq_t_3}
+\end{figure}
+
+
+
+\iffalse
+\clearpage
+\section{Tables}
+
+\bgroup
+\def\arraystretch{1.3}
+\begin{table}[ht!]
+  \sisetup{round-mode=places, round-precision=5}
+  \csvstyle{myTableStyle}{longtable=R{1cm} R{2.4cm} R{2.8cm},
+  table head={\caption{Iteration counts and execution times for the matrix defined in \ref{sec:mat2}, $m=5$.}\label{tab:matrix2-compare-5}\\ $n$ & Iteration count & Execution time \\ \hline},
+  late after line=\\, no head, separator=tab,
+  filter equal={\cii}{5}}
+  \csvreader[myTableStyle]{DATAFILE}{1=\ci, 2=\cii, 3=\ciii, 4=\civ}
+  {\ci & \ciii & \num{\civ}}
+\end{table}
+\egroup
+
+\fi
+
+\newgeometry{left=2cm,right=2cm}
+\clearpage
+\section{Code listings}
+\label{sec:code}
+
+The full code for the project, including code to generate data and figures can be found on my Github page: 
+
+https://github.com/Weirb/scientific-computing
+
+\lstinputlisting[language=C++,caption=Filename: mesh.h. Implementation of the finite element mesh in C++.,label=lst:mesh]{src/mesh.h}
+
+\par\bigskip
+\lstinputlisting[language=C++,caption=Filename: element.h. Implementation of the \inline{AdvectionElement} and \inline{BurgersElement} in C++.,label=lst:element]{src/element.h}
+
+\par\bigskip
+\lstinputlisting[language=C++,caption=Filename: main.cpp. Entry point to the program. Data generation of the results.,label=lst:main]{src/main.cpp}
